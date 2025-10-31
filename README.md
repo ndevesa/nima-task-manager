@@ -1,70 +1,28 @@
-# 🎯 NIMA
+# 🧠 NIMA — Task Manager
 
-Un clon moderno de Trello con una interfaz glassmorphism, drag & drop y persistencia.
+NIMA es un gestor de tareas tipo Trello, desarrollado con React + Supabase.
 
-![Demo](./screenshots/demo.gif)
+### ✨ Features
 
-## 🚀 Demo en vivo
+- Autenticación de usuarios con Supabase Auth
+- Board con columnas y tareas drag & drop
+- Subtareas (checklist)
+- Calendario de vencimientos
+- Modo demo
+- Personalización del fondo (imagen o color)
+- Persistencia en Supabase (DB + Storage)
 
-[Ver proyecto →](https://tu-deploy.vercel.app)
+### 🚀 Tecnologías
 
-## ✨ Características
+React • Supabase • Shadcn/UI • TailwindCSS • DnD Kit • Vercel
 
-- ✅ Crear, editar y eliminar tareas
-- 🎨 Drag & drop entre columnas
-- 📅 Fechas de vencimiento y prioridades
-- 💾 Persistencia local (localStorage)
-- 💾 Supabase DB Support
-- 📤 Exportar/Importar datos (JSON)
-- 📱 Diseño responsive
-- ⚡ Animaciones con Framer Motion
+---
 
-## 🛠️ Tech Stack
-
-- **Frontend:** React 18
-- **UI:** Tailwind CSS + shadcn/ui
-- **Drag & Drop:** dnd-kit
-- **Animaciones:** Framer Motion
-- **Build:** Vite
-
-## 📦 Instalación
-
-\`\`\`bash
-
-# Clonar el repositorio
-
-git clone https://github.com/tu-usuario/trello-glass-clone.git
-
-# Instalar dependencias
-
-npm install
-
-# Iniciar en desarrollo
-
-npm run dev
-\`\`\`
-
-## 🎨 Screenshots
-
-![Vista principal](./screenshots/home.png)
-![Crear tarea](./screenshots/task-modal.png)
-
-## 🧠 Aprendizajes
-
-En este proyecto implementé:
-
-- Implementar drag & drop complejo con dnd-kit
-- Gestionar estado complejo con refs y callbacks
-- Persistencia de datos con localStorage
-- Optimización de renders en React
-
-## 👨‍💻 Autor
-
-**Nicolás Devesa**
+💻 Demo pública: _Próximamente_  
+👤 Desarrollado por [Nicolás Devesa](https://www.nicolasdev.com)
 
 - Portfolio: [https://nicolasdev.com]
 - LinkedIn: [https://www.linkedin.com/in/nicolasdevesa/]
-- GitHub: [@ndevesa]
 
 ## 📄 Licencia
 
