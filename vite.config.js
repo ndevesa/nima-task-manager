@@ -11,4 +11,8 @@ export default defineConfig({
     },
   },
   base: "",
+  build: {
+    minify: false, // 🔥 Desactiva minificación
+    sourcemap: true, // 🧭 Genera sourcemaps para depurar
+  },
 });
