@@ -27,6 +27,8 @@ import {
   Trash2,
   Upload,
   User,
+  Info,
+  X,
 } from "lucide-react";
 
 import TaskSearch from "./TaskSearch";
