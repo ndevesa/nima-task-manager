@@ -19,10 +19,10 @@ export default function WelcomeMessage({ user, data }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.4 }}
-          className="absolute left-1/2 top-1/3 transform -translate-x-1/2 text-center px-6 py-5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 shadow-lg text-white z-50"
+          className="absolute left-1/2 top-1/3 transform -translate-x-1/2 text-center px-6 py-5 rounded-xl bg-black/60 backdrop-blur-lg border border-white/10 shadow-lg text-white z-50"
         >
           <h2 className="text-xl md:text-2xl font-semibold mb-2">
-            ¡Bienvenido, {userName}!
+            ¡Hola, {userName}!
           </h2>
           {data.columnOrder.length === 0 ? (
             <p className="text-white/80">

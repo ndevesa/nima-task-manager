@@ -6,6 +6,7 @@ import {
   Trash2,
   Pencil,
   CalendarIcon,
+  AlarmClock,
   FlagTriangleRight,
   Paperclip,
   ExternalLink,
@@ -28,7 +29,7 @@ function PriorityIcon({ priority }) {
           <FlagTriangleRight className="w-4 h-4 text-red-400" />
         </TooltipTrigger>
         <TooltipContent>
-          <p>Prioridad Alta</p>
+          <p>Alta Prioridad</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -39,7 +40,7 @@ function PriorityIcon({ priority }) {
           <FlagTriangleRight className="w-4 h-4 text-yellow-400" />
         </TooltipTrigger>
         <TooltipContent>
-          <p>Prioridad Media</p>
+          <p>Media Prioridad</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -50,7 +51,7 @@ function PriorityIcon({ priority }) {
           <FlagTriangleRight className="w-4 h-4 text-green-400" />
         </TooltipTrigger>
         <TooltipContent>
-          <p>Prioridad Baja</p>
+          <p>Baja Prioridad</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -123,16 +124,18 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
         {...listeners}
         className="cursor-grab active:cursor-grabbing"
       >
+        {task.tag && (
+          <Badge className="mb-2 text-[10px] bg-gray-900 uppercase">
+            {task.tag}
+          </Badge>
+        )}
+
         <h3 className="font-semibold pr-20">{task.content}</h3>
         {task.description && (
           <p className="text-sm text-white/70 mt-1">{task.description}</p>
         )}
 
-        {task.tag && (
-          <Badge className="mt-3 text-[10px] uppercase">{task.tag}</Badge>
-        )}
-
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-between items-center mt-3">
           {task.dueDate && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -141,13 +144,23 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
                     isNearDeadline ? "text-red-200" : "text-white/60"
                   }`}
                 >
-                  <CalendarIcon size={14} />
-
+                  <AlarmClock size={14} />
                   {format(new Date(task.dueDate), "dd/MM/yyyy", { locale: es })}
                 </small>
               </TooltipTrigger>
               <TooltipContent>
-                {isNearDeadline ? "¡Vence pronto!" : "Fecha de vencimiento"}
+                {(() => {
+                  const due = new Date(task.dueDate);
+                  const today = new Date();
+                  const diffDays = Math.ceil(
+                    (due - today) / (1000 * 60 * 60 * 24)
+                  );
+
+                  if (diffDays < 0) return "Tarea vencida";
+                  if (diffDays === 0) return "¡Vence hoy!";
+                  if (isNearDeadline) return "¡Vence muy pronto!";
+                  return `Faltan ${diffDays} día${diffDays > 1 ? "s" : ""}`;
+                })()}
               </TooltipContent>
             </Tooltip>
           )}

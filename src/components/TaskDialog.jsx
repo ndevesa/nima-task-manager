@@ -80,8 +80,8 @@ export default function TaskDialog({
   };
 
   const handleSave = async () => {
-    if (!formData.category) {
-      alert("Por favor seleccioná una categoría/columna para la tarea.");
+    if (!formData.category || !formData.taskPriority) {
+      alert("Por favor seleccioná una columna y una prioridad para la tarea.");
       return;
     }
 

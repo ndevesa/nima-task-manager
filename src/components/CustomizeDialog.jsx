@@ -7,6 +7,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
@@ -81,33 +88,38 @@ export default function CustomizeDialog({ open, setOpen }) {
           {/* Fondos */}
           <div>
             <h3 className="text-white font-semibold mb-2">Fondos</h3>
-            <div className="grid grid-cols-4 gap-3">
-              {bgImages.map((img) => (
-                <button
-                  key={img.id}
-                  onClick={() => {
-                    setSelectedImage(img);
-                    setSelectedColor(null);
-                  }}
-                  className={`relative rounded-xl overflow-hidden border-2 transition ${
-                    selectedImage?.id === img.id
-                      ? "border-blue-400"
-                      : "border-transparent hover:border-white/30"
-                  }`}
-                >
-                  <img
-                    src={img.src}
-                    alt={img.name}
-                    className="object-cover w-full h-20 opacity-90 hover:opacity-100"
-                  />
-                  {selectedImage?.id === img.id && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                      <Check className="text-white w-6 h-6" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
+
+            <Carousel className="w-full cursor-grabbing">
+              <CarouselContent className="-ml-1 ">
+                {bgImages.map((img) => (
+                  <CarouselItem key={img.id} className="basis-1/3 pl-1">
+                    <button
+                      key={img.id}
+                      onClick={() => {
+                        setSelectedImage(img);
+                        setSelectedColor(null);
+                      }}
+                      className={`relative rounded-xl overflow-hidden border-2 transition ${
+                        selectedImage?.id === img.id
+                          ? "border-blue-400"
+                          : "border-transparent hover:border-white/30"
+                      }`}
+                    >
+                      <img
+                        src={img.src}
+                        alt={img.name}
+                        className="object-cover w-full h-20 opacity-90 hover:opacity-100"
+                      />
+                      {selectedImage?.id === img.id && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                          <Check className="text-white w-6 h-6" />
+                        </div>
+                      )}
+                    </button>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
           </div>
 
           {/* Colores */}

@@ -11,13 +11,13 @@ export const bgImages = [
 ];
 
 export const bgColors = [
+  "#0A0A0A",
   "#0F172A",
   "#1E293B",
   "#334155",
   "#3B0764",
   "#581C87",
   "#312E81",
-  "#14532D",
   "#4C0519",
   "#7C2D12",
 ];

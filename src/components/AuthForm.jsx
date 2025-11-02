@@ -52,13 +52,13 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="p-4 bg-white/10 rounded-xl text-center">
+    <div className="p-2 md:px-6 rounded-xl text-center">
       {/* <h2 className="text-xl font-bold mb-4">
         {isLogin ? "Iniciar sesión" : "Registrarse"}
       </h2> */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <Input
-          className="p-2 rounded bg-white/50"
+          className="p-2 rounded backdrop-blur-lg border border-white/40 text-white placeholder:text-white/70"
           type="text"
           placeholder="Nombre Completo"
           value={fullname}
@@ -66,30 +66,38 @@ export default function AuthForm() {
           required
         />
         <Input
-          className="p-2 rounded bg-white/50"
+          className="p-2 rounded backdrop-blur-lg border border-white/40 text-white placeholder:text-white/70"
           type="email"
           placeholder="Correo"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <Input
-          className="p-2 rounded bg-white/50"
+          className="p-2 rounded backdrop-blur-lg border border-white/40 text-white placeholder:text-white/70"
           type="password"
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <Button type="submit">{isLogin ? "Entrar" : "Crear cuenta"}</Button>
+        <Button
+          variant="outline"
+          type="submit"
+          className="cursor-pointer w-fit mx-auto text-black"
+        >
+          {isLogin ? "Entrar" : "Crear cuenta"}
+        </Button>
       </form>
       <p
-        className="mt-2 text-sm cursor-pointer"
+        className="mt-4 text-sm cursor-pointer hover:opacity-50 transition-opacity"
         onClick={() => setIsLogin(!isLogin)}
       >
         {isLogin
           ? "¿No tenés cuenta? Registrate"
           : "¿Ya tenés cuenta? Iniciá sesión"}
       </p>
-      {message && <p className="text-red-400 mt-2">{message}</p>}
+      {message && (
+        <p className="text-red-500 text-sm font-semibold mt-2">{message}</p>
+      )}
     </div>
   );
 }

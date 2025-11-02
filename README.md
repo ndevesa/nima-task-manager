@@ -52,7 +52,18 @@ DONE:
 
 31/10
 
-✅ Flickering entre data Demo y data User al iniciar sesión corregido.
+✅ Corregido: Flickering entre data Demo y data User al iniciar sesión.
+
+01/11
+
+✅ Total de tareas a cada columna/categoria.
+✅ Boton de añadir tarea dentro de cada columna.
+✅ Cambio de icono para vencimiento de tareas.
+✅ Calculo de fecha de vencimiento para cada tarea ["Restan X dias", "Vence muy pronto", "Tarea vencida"]
+
+02/11
+
+✅ Armar carrusel para cambiar imagenes de background en CustomizeDialog.
 
 ---
 

@@ -41,7 +41,6 @@ export default function Header({
   setData,
   initialData,
   isDemoMode,
-  setIsDemoMode,
   handleLoadRealData,
   handleLoadDemo,
   handleOpenNewTask,
@@ -53,21 +52,14 @@ export default function Header({
   setIsInfodialogOpen,
   setFilters,
 }) {
-  const [showBanner, setShowBanner] = useState(
-    () => !localStorage.getItem("tgc-banner-dismissed")
-  );
-
-  useEffect(() => {
-    if (!showBanner) {
-      localStorage.setItem("tgc-banner-dismissed", "true");
-    }
-  }, [showBanner]);
-
   return (
     <>
       {isDemoMode && (
         <Alert className="my-3 border-orange-500/20 relative bg-orange-500/10">
-          <Eye className="w-[20px] h-[20px] text-white" color="#fff" />
+          <Eye
+            className="w-[20px] h-[20px] text-white  cursor-pointer"
+            color="#fff"
+          />
           <AlertDescription className="pr-6 text-white">
             Modo Demo Activado - Los cambios no se guardarán
           </AlertDescription>
@@ -80,34 +72,10 @@ export default function Header({
         </Alert>
       )}
 
-      {showBanner && (
-        <Alert className="my-3 border-blue-500/20 relative bg-white/90 text-black">
-          <Info className="h-4 w-4" />
-          <AlertDescription className="pr-6">
-            Tus datos se guardan automáticamente en tu navegador. Usa “Exportar
-            datos” regularmente para hacer backup.
-          </AlertDescription>
-          <AlertDescription className="pr-6">
-            Elimina las columnas demo para comenzar a usar NIMA.
-          </AlertDescription>
-          <button
-            onClick={() => setShowBanner(false)}
-            className="absolute top-2 right-2 p-1 hover:bg-white/10 rounded"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </Alert>
-      )}
-
-      <header className="p-4 md:py-4 md:px-0 flex md:flex-row gap-4 justify-between items-center">
+      <header className="p-4 md:py-4 md:px-0 flex md:flex-row flex-wrap gap-4 justify-between items-center">
         <div className="block">
-          <div className="flex items-end gap-2 mb-2">
-            <h1 className="text-2xl font-bold leading-none">NIMA</h1>
-            <small>
-              <i>Task Manager</i>
-            </small>
-          </div>
-          <h6 className="font-bold leading-none">[{userName}] </h6>
+          <h1 className="text-2xl font-bold leading-none mb-2">NIMA</h1>
+          <h6 className="font-normal leading-none">[{userName}] </h6>
         </div>
 
         <div className="flex gap-4 items-center">
@@ -115,11 +83,7 @@ export default function Header({
             <TooltipTrigger asChild>
               <Button
                 onClick={isDemoMode ? handleLoadRealData : handleLoadDemo}
-                className={`${
-                  isDemoMode
-                    ? "hidden"
-                    : "bg-orange-500/20 hover:bg-orange-500/30 border-orange-500/20 border rounded-full"
-                }`}
+                className="bg-orange-500/20 hover:bg-orange-500/30 border-orange-500/20 border rounded-full"
               >
                 {isDemoMode ? (
                   <Database className="w-[20px] h-[20px]" />
@@ -133,11 +97,13 @@ export default function Header({
             </TooltipContent>
           </Tooltip>
 
-          <TaskSearch columns={data.columns} onSearchChange={setFilters} />
+          {data?.columns && (
+            <TaskSearch columns={data.columns} onSearchChange={setFilters} />
+          )}
 
           <div
             id="Menu"
-            className="bg-white/10 border border-white/20 p-2 rounded-lg flex items-center gap-2"
+            className="bg-white/10 border border-white/20 p-2 rounded-lg flex flex-wrap items-center gap-2"
           >
             <Tooltip>
               <TooltipTrigger asChild>
@@ -190,7 +156,7 @@ export default function Header({
 
               <DropdownMenuContent
                 align="end"
-                className="bg-gray-900 border-white/20 text-white"
+                className="bg-gray backdrop-blur-lg border-white/20 text-white"
               >
                 <DropdownMenuItem
                   onClick={handleExport}
@@ -231,7 +197,7 @@ export default function Header({
             </DropdownMenu>
           </div>
 
-          <div className="bg-white/10 border border-white/20 p-2 rounded-lg flex items-center gap-2">
+          <div className="bg-white/10 border border-white/20 p-2 rounded-lg flex flex-wrap items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

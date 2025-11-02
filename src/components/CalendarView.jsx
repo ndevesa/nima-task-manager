@@ -25,7 +25,6 @@ export default function CalendarView({ tasks, onTaskClick, onCreateTask }) {
   const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
-  // Calcular días visibles (incluye primeros/últimos de semana)
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart, { locale: es });
@@ -49,7 +48,6 @@ export default function CalendarView({ tasks, onTaskClick, onCreateTask }) {
     }
   };
 
-  // Agrupamos las tareas por día
   const tasksByDay = useMemo(() => {
     const map = {};
     tasks.forEach((t) => {
@@ -65,7 +63,7 @@ export default function CalendarView({ tasks, onTaskClick, onCreateTask }) {
   const weekDays = ["L", "M", "M", "J", "V", "S", "D"];
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex flex-col items-center w-full ">
       {/* Header del calendario */}
       <div className="flex justify-between items-center w-full mb-4">
         <button
@@ -104,7 +102,7 @@ export default function CalendarView({ tasks, onTaskClick, onCreateTask }) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -40 }}
           transition={{ duration: 0.25 }}
-          className="grid grid-cols-7 gap-2 text-center text-sm w-full"
+          className="grid grid-cols-7 gap-2 text-center text-sm w-full "
         >
           {daysInMonth.map((day) => {
             const dayKey = format(day, "yyyy-MM-dd");

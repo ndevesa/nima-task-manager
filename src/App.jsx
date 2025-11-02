@@ -31,7 +31,6 @@ import { supabase } from "./lib/supabaseClient";
 import { bgImages } from "./constants/backgrounds";
 import initialData from "./data/initialData";
 import * as BoardLogic from "./lib/BoardLogic";
-
 import Header from "./components/Header";
 import DraggableColumn from "./components/DraggableColumn";
 import Login from "@/components/Login";
@@ -46,6 +45,17 @@ export default function App() {
   // ---- AUTENTICACIÓN ----
   const { user, loading } = useAuth();
   const userName = user?.user_metadata?.fullname || user?.email?.split("@")[0];
+
+  /* Actualizar <title> con username */
+  useEffect(() => {
+    if (user?.user_metadata?.fullname) {
+      document.title = `NIMA Tasks - ${user.user_metadata.fullname}`;
+    } else if (user?.email) {
+      document.title = `NIMA Tasks - ${user.email}`;
+    } else {
+      document.title = "NIMA Tasks";
+    }
+  }, [user]);
 
   // ---- ESTADOS PRINCIPALES ----
   const [data, setData] = useState(null);
@@ -565,6 +575,9 @@ export default function App() {
                     onEditTask={handleEditTask}
                     onDeleteColumn={handleDeleteColumn}
                     onUpdateTitle={handleUpdateColumnTitle}
+                    setFormData={setFormData}
+                    setEditingTaskId={setEditingTaskId}
+                    setIsDialogOpen={setIsDialogOpen}
                   />
                 );
               })}
@@ -573,7 +586,9 @@ export default function App() {
 
         <footer className="text-center w-full py-2">
           <small className="mb-0 text-gray-400">
-            <a href="https://www.nicolasdev.com/">www.nicolasdev.com</a>
+            <a href="https://www.nicolasdev.com/" target="_blank">
+              www.nicolasdev.com
+            </a>
           </small>
         </footer>
 

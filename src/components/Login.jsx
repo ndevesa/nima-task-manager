@@ -17,8 +17,8 @@ function Login() {
         className="flex items-center justify-center h-screen p-4"
         style={{ backgroundImage: `url(${bg})`, backgroundSize: "cover" }}
       >
-        <div className="rounded-2xl shadow-xl bg-white w-full text-center max-w-md pt-4">
-          <h2 className="text-2xl font-bold mb-4">Bienvenido a NIMA</h2>
+        <div className="rounded-2xl shadow-xl bg-gray backdrop-blur-lg border border-white/20 w-full text-center text-white max-w-md py-5 px-4 md:py-[40px]">
+          <h2 className="text-2xl font-bold mb-2">Bienvenido a NIMA</h2>
 
           <p className=" mb-4 text-sm">
             Iniciá sesión para guardar tu tablero y sincronizar tus tareas.

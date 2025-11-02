@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 body {
-  background-color: #0f172a;
+  background-color: #0f0f0f;
 }
 #Main {
   background-size: cover;

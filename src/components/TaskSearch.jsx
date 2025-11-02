@@ -38,7 +38,7 @@ export default function TaskSearch({ columns, onSearchChange }) {
           setSearchQuery(e.target.value);
           handleChange({ query: e.target.value });
         }}
-        className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/30"
+        className="flex-1 bg-white/10 border-white/20 text-white/80 placeholder:text-white/70"
       />
 
       {/* PRIORIDAD con placeholder */}
@@ -49,10 +49,10 @@ export default function TaskSearch({ columns, onSearchChange }) {
           handleChange({ priority: value });
         }}
       >
-        <SelectTrigger className="bg-white/10 border-white/20 text-white w-[140px]">
+        <SelectTrigger className="bg-white/10 border-white/20 text-white/80 hover:text-white w-[140px] [&>span]:text-white/80 [&>svg]:text-white/80 hover:[&>svg]:text-white">
           <SelectValue placeholder="Prioridad" />
         </SelectTrigger>
-        <SelectContent className="bg-gray-900 border-white/20 text-white">
+        <SelectContent className="bg-gray backdrop-blur-lg border-white/20 text-white">
           <SelectItem value="Todas">Todas</SelectItem>
           <SelectItem value="Alta">Alta</SelectItem>
           <SelectItem value="Media">Media</SelectItem>
@@ -68,16 +68,16 @@ export default function TaskSearch({ columns, onSearchChange }) {
           handleChange({ column: value });
         }}
       >
-        <SelectTrigger className="bg-white/10 border-white/20 text-white w-[180px]">
+        <SelectTrigger className="bg-white/10 border-white/20 text-white/80 hover:text-white w-[140px] [&>span]:text-white/80 [&>svg]:text-white/80 hover:[&>svg]:text-white">
           <SelectValue>
             {selectedColumn === "Todas" ? (
-              <span className="text-white/30">Categoría</span>
+              <span className="text-white/70">Categoría</span>
             ) : (
               columns[selectedColumn]?.title || selectedColumn
             )}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="bg-gray-900 border-white/20 text-white">
+        <SelectContent className="bg-gray backdrop-blur-lg border-white/20 text-white">
           <SelectItem value="Todas">Todas</SelectItem>
           {Object.values(columns).map((col) => (
             <SelectItem key={col.id} value={col.id}>

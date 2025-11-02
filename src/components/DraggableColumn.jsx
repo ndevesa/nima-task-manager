@@ -5,8 +5,10 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Trash2, GripHorizontal } from "lucide-react";
+import { Trash2, GripHorizontal, SquarePen } from "lucide-react";
+import { Button } from "./ui/button";
 import DraggableCard from "./DraggableCard";
+import { createTaskDB } from "@/lib/BoardLogic";
 
 function DraggableColumn({
   column,
@@ -15,6 +17,9 @@ function DraggableColumn({
   onEditTask,
   onDeleteColumn,
   onUpdateTitle,
+  setFormData,
+  setEditingTaskId,
+  setIsDialogOpen,
 }) {
   const {
     attributes,
@@ -79,13 +84,18 @@ function DraggableColumn({
             />
           ) : (
             <h2
-              className="text-lg font-semibold capitalize select-none cursor-text"
+              className="text-lg font-semibold capitalize select-none cursor-text flex items-center gap-2"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);
               }}
             >
-              {column.title} {tasks.length > 10 && ` (${tasks.length})`}
+              {column.title}{" "}
+              {tasks.length > 0 && (
+                <div className="bg-gray-900 text-center rounded-full text-xs text-white/50 w-5 h-5">
+                  <small>({tasks.length})</small>
+                </div>
+              )}
             </h2>
           )}
 
@@ -129,6 +139,27 @@ function DraggableColumn({
           ))}
         </div>
       </SortableContext>
+
+      <Button
+        onClick={() => {
+          setFormData({
+            title: "",
+            description: "",
+            category: column.id, // 👈 columna actual preseleccionada
+            dueDate: null,
+            taskPriority: "",
+            subtasks: [],
+            tag: "",
+          });
+          setEditingTaskId(null);
+          setIsDialogOpen(true);
+        }}
+        className="opacity-30 hover:opacity-100 border border-white/20 bg-transparent hover:bg-transparent hover:text-white/80 mt-5 text-xs cursor-pointer"
+        size="sm"
+      >
+        <SquarePen className="w-2 h-2" />
+        Nueva Tarea
+      </Button>
     </div>
   );
 }
