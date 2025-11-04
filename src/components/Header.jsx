@@ -83,7 +83,7 @@ export default function Header({
             <TooltipTrigger asChild>
               <Button
                 onClick={isDemoMode ? handleLoadRealData : handleLoadDemo}
-                className="bg-orange-500/20 hover:bg-orange-500/30 border-orange-500/20 border rounded-full"
+                className="bg-orange-500/20 hover:bg-orange-500/30 border-orange-500/20 border cursor-pointer"
               >
                 {isDemoMode ? (
                   <Database className="w-[20px] h-[20px]" />

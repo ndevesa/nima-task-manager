@@ -14,6 +14,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
@@ -25,44 +26,79 @@ export default function CustomizeDialog({ open, setOpen }) {
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+  const [uploadedBackground, setUploadedBackground] = useState(null);
+
+  const uploadUserBackground = async (file, userId) => {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `background-${Date.now()}.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
+
+    const { error } = await supabase.storage
+      .from("user-backgrounds")
+      .upload(filePath, file, { upsert: true });
+
+    if (error) throw error;
+
+    return filePath;
+  };
 
   const handleSave = async () => {
-    const bgValue = selectedImage ? selectedImage.src : selectedColor;
+    let bgValue = selectedColor || null;
 
-    if (user) {
-      const { error } = await supabase
+    try {
+      if (uploadedBackground) {
+        const uploadedPath = await uploadUserBackground(
+          uploadedBackground,
+          user.id
+        );
+        bgValue = uploadedPath;
+      } else if (selectedImage) {
+        bgValue = selectedImage.src;
+      }
+
+      await supabase
         .from("profiles")
         .update({ background: bgValue, updated_at: new Date().toISOString() })
         .eq("id", user.id);
 
-      if (error) console.error("Error guardando background:", error);
-    }
+      if (bgValue?.startsWith("http")) {
+        document.body.style.backgroundImage = `url(${bgValue})`;
+      } else if (bgValue?.includes("/")) {
+        // Recuperar URL firmada temporalmente (válida por ej. 1 hora)
+        const { data, error } = await supabase.storage
+          .from("user-backgrounds")
+          .createSignedUrl(bgValue, 3600); // 1 hora
 
-    // Aplicar visualmente
-    if (selectedImage) {
-      document.body.style.backgroundImage = `url(${selectedImage.src})`;
-      document.body.style.backgroundSize = "cover";
-      document.body.style.backgroundPosition = "center";
-      document.body.style.backgroundColor = "";
-    } else if (selectedColor) {
-      document.body.style.backgroundImage = "none";
-      document.body.style.backgroundColor = selectedColor;
-    }
+        if (!error && data?.signedUrl) {
+          document.body.style.backgroundImage = `url(${data.signedUrl})`;
+        }
+      } else {
+        document.body.style.backgroundColor = bgValue;
+        document.body.style.backgroundImage = "none";
+      }
 
-    setOpen(false);
+      setOpen(false);
+    } catch (err) {
+      console.error("Error subiendo fondo:", err);
+    }
   };
 
   // Live preview directo dentro del dialog
-  const previewStyle = useMemo(
-    () => ({
-      backgroundImage: selectedImage ? `url(${selectedImage.src})` : "none",
+  const previewStyle = useMemo(() => {
+    let backgroundImage = "none";
+    if (selectedImage) backgroundImage = `url(${selectedImage.src})`;
+    else if (uploadedBackground)
+      backgroundImage = `url(${URL.createObjectURL(uploadedBackground)})`;
+
+    return {
+      backgroundImage,
       backgroundColor:
-        selectedColor || (selectedImage ? "transparent" : "#0f172a"),
+        selectedColor ||
+        (selectedImage || uploadedBackground ? "transparent" : "#0f172a"),
       backgroundSize: "cover",
       backgroundPosition: "center",
-    }),
-    [selectedImage, selectedColor]
-  );
+    };
+  }, [selectedImage, selectedColor, uploadedBackground]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -120,6 +156,17 @@ export default function CustomizeDialog({ open, setOpen }) {
                 ))}
               </CarouselContent>
             </Carousel>
+
+            <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-white/20 rounded-lg hover:border-white/40 cursor-pointer transition bg-white/5 mt-4 mx-1">
+              <Paperclip className="w-4 h-4 text-white/50" />
+              <span className="text-sm text-white/50">Imagen (3MB max)</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => setUploadedBackground(e.target.files[0])}
+              />
+            </label>
           </div>
 
           {/* Colores */}

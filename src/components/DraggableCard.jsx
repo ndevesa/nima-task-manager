@@ -18,7 +18,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 function PriorityIcon({ priority }) {
   // Usar title en vez de Tooltips pesados; componente memoizado al final por React.memo
@@ -135,6 +137,8 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
           <p className="text-sm text-white/70 mt-1">{task.description}</p>
         )}
 
+        <Separator className="my-3 bg-white/10" />
+
         <div className="flex justify-between items-center mt-3">
           {task.dueDate && (
             <Tooltip>
@@ -168,7 +172,7 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
           {task.subtasks && task.subtasks.length > 0 && (
             <p className="text-xs text-white/60">
               {task.subtasks.filter((st) => st.completed).length} /{" "}
-              {task.subtasks.length} Subtareas Completadas
+              {task.subtasks.length} Subtareas
             </p>
           )}
 

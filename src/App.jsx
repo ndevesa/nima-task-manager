@@ -161,23 +161,26 @@ export default function App() {
         .eq("id", userId)
         .single();
 
-      if (error) {
-        console.error("Error cargando background:", error);
-        return;
-      }
+      if (error) return console.error(error);
 
-      if (data?.background) {
-        const bg = data.background;
+      const bg = data?.background;
+      if (!bg) return;
 
-        if (bg.startsWith("http")) {
-          document.body.style.backgroundImage = `url(${bg})`;
+      if (bg.startsWith("http")) {
+        document.body.style.backgroundImage = `url(${bg})`;
+      } else if (bg.includes("/")) {
+        // Crear URL firmada temporal para imágenes privadas
+        const { data: signed, error: signedError } = await supabase.storage
+          .from("user-backgrounds")
+          .createSignedUrl(bg, 3600);
+
+        if (!signedError && signed?.signedUrl) {
+          document.body.style.backgroundImage = `url(${signed.signedUrl})`;
           document.body.style.backgroundSize = "cover";
           document.body.style.backgroundPosition = "center";
-          document.body.style.backgroundColor = "";
-        } else {
-          document.body.style.backgroundImage = "none";
-          document.body.style.backgroundColor = bg;
         }
+      } else {
+        document.body.style.backgroundColor = bg;
       }
     }
 

@@ -65,6 +65,10 @@ DONE:
 
 ✅ Armar carrusel para cambiar imagenes de background en CustomizeDialog.
 
+04/11
+
+✅ Agregar background propio attach file desde customizedialog.
+
 ---
 
 TODOS:

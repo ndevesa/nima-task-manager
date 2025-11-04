@@ -145,7 +145,7 @@ function DraggableColumn({
           setFormData({
             title: "",
             description: "",
-            category: column.id, // 👈 columna actual preseleccionada
+            category: column.id,
             dueDate: null,
             taskPriority: "",
             subtasks: [],
@@ -154,7 +154,8 @@ function DraggableColumn({
           setEditingTaskId(null);
           setIsDialogOpen(true);
         }}
-        className="opacity-30 hover:opacity-100 border border-white/20 bg-transparent hover:bg-transparent hover:text-white/80 mt-5 text-xs cursor-pointer"
+        className={`opacity-30 hover:opacity-100 border border-white/20 bg-transparent hover:bg-transparent hover:text-white/80 text-xs cursor-pointer 
+    ${tasks.length > 0 ? "mt-5" : ""}`}
         size="sm"
       >
         <SquarePen className="w-2 h-2" />
