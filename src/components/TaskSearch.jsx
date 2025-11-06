@@ -29,7 +29,7 @@ export default function TaskSearch({ columns, onSearchChange }) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 bg-white/10 border border-white/20 p-2 rounded-xl backdrop-blur-md">
+    <div className="flex flex-col md:flex-row items-center gap-3 bg-white/10 border border-white/20 p-2 rounded-xl backdrop-blur-md">
       <Input
         type="text"
         placeholder={searchPlaceholder}

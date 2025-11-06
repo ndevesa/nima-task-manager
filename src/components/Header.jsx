@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -6,79 +5,38 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 
-import {
-  CalendarDays,
-  CircleQuestionMark,
-  Columns2,
-  Database,
-  Download,
-  Eye,
-  LogOut,
-  PencilIcon,
-  Settings,
-  SquarePen,
-  Trash2,
-  Upload,
-  User,
-  Info,
-  X,
-} from "lucide-react";
+import { Database, Eye } from "lucide-react";
 
 import TaskSearch from "./TaskSearch";
-import * as BoardLogic from "@/lib/BoardLogic";
-import { supabase } from "@/lib/supabaseClient";
 
 export default function Header({
   userName,
   data,
-  setData,
-  initialData,
   isDemoMode,
   handleLoadRealData,
   handleLoadDemo,
-  handleOpenNewTask,
-  handleAddNewColumn,
-  handleExport,
-  handleImport,
-  setIsCalendarOpen,
-  setIsCustomizeDialogOpen,
-  setIsInfodialogOpen,
   setFilters,
 }) {
   return (
     <>
-      {isDemoMode && (
-        <Alert className="my-3 border-orange-500/20 relative bg-orange-500/10">
-          <Eye
-            className="w-[20px] h-[20px] text-white  cursor-pointer"
-            color="#fff"
-          />
-          <AlertDescription className="pr-6 text-white">
-            Modo Demo Activado - Los cambios no se guardarán
-          </AlertDescription>
-          <button
-            onClick={handleLoadRealData}
-            className="absolute top-2 right-2 p-1 px-2 hover:bg-white/10 rounded text-orange-400 hover:text-white"
-          >
-            Volver a mis datos →
-          </button>
-        </Alert>
-      )}
+      <header className="flex flex-col md:flex-row flex-wrap max-w-full gap-4 justify-center items-center p-4">
+        <div className="flex justify-center items-center gap-4">
+          {isDemoMode && (
+            <Alert className="flex flex-col items-center w-fit md:flex-row my-3 border-orange-500/20 relative bg-orange-500/10 m-0">
+              <Eye className="w-[20px] h-[20px] text-white" color="#fff" />
+              <AlertDescription className="pr-6 text-white">
+                Modo Demo Activado - Los cambios no se guardarán
+              </AlertDescription>
+              <button
+                onClick={handleLoadRealData}
+                className="p-1 px-2 rounded text-orange-400 cursor-pointer"
+              >
+                Volver a mis datos →
+              </button>
+            </Alert>
+          )}
 
-      <header className="p-4 md:py-4 md:px-0 flex md:flex-row flex-wrap gap-4 justify-between items-center">
-        <div className="block">
-          <h1 className="text-2xl font-bold leading-none mb-2">NIMA</h1>
-          <h6 className="font-normal leading-none">[{userName}] </h6>
-        </div>
-
-        <div className="flex gap-4 items-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -100,10 +58,13 @@ export default function Header({
           {data?.columns && (
             <TaskSearch columns={data.columns} onSearchChange={setFilters} />
           )}
+        </div>
 
-          <div
+        <p className="text-white absolute right-10 top-8">{userName}</p>
+
+        {/* <div
             id="Menu"
-            className="bg-white/10 border border-white/20 p-2 rounded-lg flex flex-wrap items-center gap-2"
+            className="bg-white/10 border border-white/20 p-2 rounded-lg items-center gap-2 w-fit xs:w-full flex justify-between flex-wrap"
           >
             <Tooltip>
               <TooltipTrigger asChild>
@@ -195,9 +156,9 @@ export default function Header({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </div> */}
 
-          <div className="bg-white/10 border border-white/20 p-2 rounded-lg flex flex-wrap items-center gap-2">
+        {/* <div className="bg-white/10 border border-white/20 p-2 rounded-lg flex flex-wrap w-fit items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -255,8 +216,7 @@ export default function Header({
                 <p>Cerrar sesión</p>
               </TooltipContent>
             </Tooltip>
-          </div>
-        </div>
+          </div> */}
       </header>
     </>
   );

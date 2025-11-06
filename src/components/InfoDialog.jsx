@@ -11,7 +11,7 @@ import {
 export default function InfoDialog({ isOpen, onClose }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-black border-white/20 text-white/70">
+      <DialogContent className="bg-[#0f0f0f] border-white/20 text-white/70">
         <DialogHeader>
           <DialogTitle className="text-white">Acerca de NIMA</DialogTitle>
           <DialogDescription className="mt-4 text-white/70">

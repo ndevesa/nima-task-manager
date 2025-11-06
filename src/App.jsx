@@ -40,6 +40,10 @@ import TaskDialog from "@/components/TaskDialog";
 import InfoDialog from "@/components/InfoDialog";
 import WelcomeMessage from "@/components/WelcomeMessage";
 import LoadingScreen from "./components/LoadingScreen";
+import SidebarNima from "@/components/SidebarNima";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import exportData from "./lib/exportData";
+import ExportConfirmDialog from "./components/ExportConfirmDialog";
 
 export default function App() {
   // ---- AUTENTICACIÓN ----
@@ -309,12 +313,6 @@ export default function App() {
     [setData, user]
   );
 
-  const handleExport = useCallback(() => {
-    const json = BoardLogic.exportData(dataRef.current);
-    alert("Se exportaron datos en formato JSON");
-    return json;
-  }, []);
-
   const handleImport = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
@@ -505,19 +503,28 @@ export default function App() {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <div
-        id="Main"
-        className={`min-h-screen text-white flex flex-col w-full ${
-          isDragging ? "is-dragging" : ""
-        }`}
-      >
+    <SidebarProvider>
+      {/* === SIDEBAR === */}
+      <SidebarNima
+        userName={userName}
+        handleOpenNewTask={handleOpenNewTask}
+        handleAddNewColumn={handleAddNewColumn}
+        setIsCalendarOpen={setIsCalendarOpen}
+        handleExport={() => exportData(data)}
+        handleImport={handleImport}
+        setIsCustomizeDialogOpen={setIsCustomizeDialogOpen}
+        setIsInfodialogOpen={setIsInfodialogOpen}
+      />
+
+      {/* === MAIN CONTENT === */}
+      <div className="flex-1 overflow-hidden relative z-10">
+        {/* === MOBILE TOGGLE BUTTON === */}
+        <SidebarTrigger
+          color="#fff"
+          className="fixed h-10 w-10 text-white bg-[#0f0f0f] hover:bg-[#0f0f0f] mt-5 ml-5 z-50  cursor-pointer"
+        />
+
+        {/* HEADER */}
         <Header
           userName={userName}
           data={data}
@@ -527,151 +534,162 @@ export default function App() {
           setIsDemoMode={setIsDemoMode}
           handleLoadRealData={handleLoadRealData}
           handleLoadDemo={handleLoadDemo}
-          handleOpenNewTask={handleOpenNewTask}
-          handleAddNewColumn={handleAddNewColumn}
-          handleExport={handleExport}
-          handleImport={handleImport}
-          setIsCalendarOpen={setIsCalendarOpen}
-          setIsCustomizeDialogOpen={setIsCustomizeDialogOpen}
-          setIsInfodialogOpen={setIsInfodialogOpen}
           setFilters={setFilters}
         />
 
-        <WelcomeMessage user={user} data={data} />
-
-        <main className="flex-1 w-full p-3 flex gap-6 overflow-x-auto bg-white/5 rounded-2xl border border-white/10 shadow-xl">
-          <SortableContext
-            items={data.columnOrder}
-            strategy={horizontalListSortingStrategy}
+        {/* === DND CONTEXT === */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <div
+            id="Main"
+            className={`flex-1 flex flex-col text-white  transition-all duration-300 ${
+              isDragging ? "is-dragging" : ""
+            }`}
           >
-            {columnsToRender
+            {/* BIENVENIDA */}
+            <WelcomeMessage user={user} data={data} />
 
-              .filter(
-                ({ column }) =>
-                  filters.column === "Todas" || column.id === filters.column
-              )
+            {/* TABLERO PRINCIPAL */}
+            <div className="flex-1 w-full p-3 flex gap-4 overflow-x-auto bg-white/5 rounded-2xl border border-white/10 shadow-xl">
+              <SortableContext
+                items={data.columnOrder}
+                strategy={horizontalListSortingStrategy}
+              >
+                {columnsToRender
+                  .filter(
+                    ({ column }) =>
+                      filters.column === "Todas" || column.id === filters.column
+                  )
+                  .map(({ column, tasks }) => {
+                    const filteredTasks = tasks.map((task) => {
+                      const matchQuery =
+                        filters.query === "" ||
+                        task.content
+                          .toLowerCase()
+                          .includes(filters.query.toLowerCase()) ||
+                        task.description
+                          ?.toLowerCase()
+                          .includes(filters.query.toLowerCase());
 
-              .map(({ column, tasks }) => {
-                const filteredTasks = tasks.map((task) => {
-                  const matchQuery =
-                    filters.query === "" ||
-                    task.content
-                      .toLowerCase()
-                      .includes(filters.query.toLowerCase()) ||
-                    task.description
-                      ?.toLowerCase()
-                      .includes(filters.query.toLowerCase());
+                      const matchPriority =
+                        !filters.priority ||
+                        filters.priority === "Todas" ||
+                        task.taskPriority === filters.priority;
 
-                  const matchPriority =
-                    !filters.priority || // ← undefined = muestra todas
-                    filters.priority === "Todas" ||
-                    task.taskPriority === filters.priority;
+                      return {
+                        ...task,
+                        visible: matchQuery && matchPriority,
+                      };
+                    });
 
-                  return { ...task, visible: matchQuery && matchPriority };
-                });
-                return (
-                  <DraggableColumn
-                    key={column.id}
-                    column={column}
-                    tasks={filteredTasks}
-                    onDeleteTask={handleDeleteTask}
-                    onEditTask={handleEditTask}
-                    onDeleteColumn={handleDeleteColumn}
-                    onUpdateTitle={handleUpdateColumnTitle}
-                    setFormData={setFormData}
-                    setEditingTaskId={setEditingTaskId}
-                    setIsDialogOpen={setIsDialogOpen}
+                    return (
+                      <DraggableColumn
+                        key={column.id}
+                        column={column}
+                        tasks={filteredTasks}
+                        onDeleteTask={handleDeleteTask}
+                        onEditTask={handleEditTask}
+                        onDeleteColumn={handleDeleteColumn}
+                        onUpdateTitle={handleUpdateColumnTitle}
+                        setFormData={setFormData}
+                        setEditingTaskId={setEditingTaskId}
+                        setIsDialogOpen={setIsDialogOpen}
+                      />
+                    );
+                  })}
+              </SortableContext>
+            </div>
+
+            {/* FOOTER */}
+            <footer className="text-center w-full py-2 fixed bottom-0">
+              <small className="text-gray-400">
+                <a href="https://www.nicolasdev.com/" target="_blank">
+                  www.nicolasdev.com
+                </a>
+              </small>
+            </footer>
+
+            {/* DIALOGS */}
+            <CustomizeDialog
+              open={isCustomizeDialogOpen}
+              setOpen={setIsCustomizeDialogOpen}
+            />
+            <InfoDialog
+              isOpen={isInfodialogOpen}
+              onClose={() => setIsInfodialogOpen(false)}
+            />
+            <TaskDialog
+              isOpen={isDialogOpen}
+              setIsOpen={(open) => {
+                setIsDialogOpen(open);
+                if (!open) {
+                  setTimeout(() => {
+                    setEditingTaskId(null);
+                    setFormData({
+                      title: "",
+                      description: "",
+                      category: undefined,
+                      dueDate: null,
+                      taskPriority: "",
+                      subtasks: [],
+                      tag: "",
+                      attachment_url: null,
+                      attachment_name: null,
+                      attachment_type: null,
+                    });
+                  }, 200);
+                }
+              }}
+              editingTaskId={editingTaskId}
+              formData={formData}
+              setFormData={setFormData}
+              onSaveTask={onSaveTask}
+              handleDeleteTask={handleDeleteTask}
+              data={data}
+              priorities={priorities}
+            />
+
+            {/* CALENDAR */}
+            <Dialog open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <DialogContent className="dialog-wide bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-2xl h-[90vh] overflow-hidden">
+                <DialogHeader>
+                  <DialogTitle>Modo Calendario</DialogTitle>
+                  <DialogDescription className="text-white/70">
+                    Visualizá tus tareas según la fecha de vencimiento.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="mt-4 h-full overflow-y-auto overflow-x-hidden">
+                  <CalendarView
+                    tasks={Object.values(data.tasks)}
+                    onTaskClick={(taskId) => handleEditTask(taskId)}
+                    onCreateTask={handleOpenNewTaskWithDate}
                   />
-                );
-              })}
-          </SortableContext>
-        </main>
+                </div>
+              </DialogContent>
+            </Dialog>
 
-        <footer className="text-center w-full py-2">
-          <small className="mb-0 text-gray-400">
-            <a href="https://www.nicolasdev.com/" target="_blank">
-              www.nicolasdev.com
-            </a>
-          </small>
-        </footer>
-
-        {/*PERSONALIZAR DIALOG*/}
-        <CustomizeDialog
-          open={isCustomizeDialogOpen}
-          setOpen={setIsCustomizeDialogOpen}
-        />
-
-        {/* INFO DIALOG */}
-        <InfoDialog
-          isOpen={isInfodialogOpen}
-          onClose={() => setIsInfodialogOpen(false)}
-        />
-
-        {/* CREAR-EDITAR TAREA */}
-        <TaskDialog
-          isOpen={isDialogOpen}
-          setIsOpen={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setTimeout(() => {
-                setEditingTaskId(null);
-                setFormData({
-                  title: "",
-                  description: "",
-                  category: undefined,
-                  dueDate: null,
-                  taskPriority: "",
-                  subtasks: [],
-                  tag: "",
-                  attachment_url: null,
-                  attachment_name: null,
-                  attachment_type: null,
-                });
-              }, 200);
-            }
-          }}
-          editingTaskId={editingTaskId}
-          formData={formData}
-          setFormData={setFormData}
-          onSaveTask={onSaveTask}
-          handleDeleteTask={handleDeleteTask}
-          data={data}
-          priorities={priorities}
-        />
-
-        {/* VISTA CALENDAR DIALOG */}
-        <Dialog open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-          <DialogContent className="dialog-wide bg-white/10 backdrop-blur-lg border border-white/20 text-white shadow-2xl h-[90vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>Modo Calendario</DialogTitle>
-              <DialogDescription className="text-white/70">
-                Visualizá tus tareas según la fecha de vencimiento.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="mt-4 h-full overflow-y-auto overflow-x-hidden">
-              <CalendarView
-                tasks={Object.values(data.tasks)}
-                onTaskClick={(taskId) => handleEditTask(taskId)}
-                onCreateTask={handleOpenNewTaskWithDate}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <DragOverlay dropAnimation={null}>
-          {activeId && activeType === "card" && activeTask ? (
-            <div className="bg-white/10 p-2 rounded-md border border-white/10 text-black w-60">
-              <h3 className="block font-semibold truncate">
-                {activeTask.content}
-              </h3>
-              {activeTask.description && (
-                <p className="text-sm truncate">{activeTask.description}</p>
-              )}
-            </div>
-          ) : null}
-        </DragOverlay>
+            {/* DRAG OVERLAY */}
+            <DragOverlay dropAnimation={null}>
+              {activeId && activeType === "card" && activeTask ? (
+                <div className="bg-white/10 p-2 rounded-md border border-white/10 text-black w-60">
+                  <h3 className="block font-semibold truncate">
+                    {activeTask.content}
+                  </h3>
+                  {activeTask.description && (
+                    <p className="text-sm truncate">{activeTask.description}</p>
+                  )}
+                </div>
+              ) : null}
+            </DragOverlay>
+          </div>
+        </DndContext>
       </div>
-    </DndContext>
+    </SidebarProvider>
   );
 }

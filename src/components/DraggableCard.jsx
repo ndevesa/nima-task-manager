@@ -132,7 +132,7 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
           </Badge>
         )}
 
-        <h3 className="font-semibold pr-20">{task.content}</h3>
+        <h3 className="font-semibold text-sm pr-20">{task.content}</h3>
         {task.description && (
           <p className="text-sm text-white/70 mt-1">{task.description}</p>
         )}
@@ -143,14 +143,19 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
           {task.dueDate && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <small
-                  className={`flex items-center gap-2 text-xs ${
+                <span
+                  className={`flex items-center gap-1 cursor-help  ${
                     isNearDeadline ? "text-red-200" : "text-white/60"
                   }`}
                 >
                   <AlarmClock size={14} />
-                  {format(new Date(task.dueDate), "dd/MM/yyyy", { locale: es })}
-                </small>
+                  <small>
+                    Vence el
+                    {format(new Date(task.dueDate), " dd/MM/yyyy", {
+                      locale: es,
+                    })}
+                  </small>
+                </span>
               </TooltipTrigger>
               <TooltipContent>
                 {(() => {
@@ -201,7 +206,7 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
           <TooltipTrigger asChild>
             <button
               onClick={handleEdit}
-              className="p-0 md:p-1.5 rounded-full bg-blue-500/20 hover:bg-blue-500/40"
+              className="p-0 md:p-1.5 rounded-full bg-blue-500/20 hover:bg-blue-500/40 cursor-pointer"
             >
               <Pencil className="w-4 h-4" />
             </button>
@@ -215,7 +220,7 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
           <TooltipTrigger asChild>
             <button
               onClick={handleDelete}
-              className="p-0 md:p-1.5 rounded-full bg-red-500/20 hover:bg-red-500/40"
+              className="p-0 md:p-1.5 rounded-full bg-red-500/20 hover:bg-red-500/40 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
             </button>

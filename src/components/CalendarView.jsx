@@ -63,7 +63,7 @@ export default function CalendarView({ tasks, onTaskClick, onCreateTask }) {
   const weekDays = ["L", "M", "M", "J", "V", "S", "D"];
 
   return (
-    <div className="flex flex-col items-center w-full ">
+    <div className="flex flex-col items-center w-full">
       {/* Header del calendario */}
       <div className="flex justify-between items-center w-full mb-4">
         <button

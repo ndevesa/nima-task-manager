@@ -12,7 +12,9 @@ body {
   background-attachment: fixed;
   background-repeat: no-repeat;
   padding: 0 20px 0 20px;
-
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
   /* background-image: url("./assets/c.webp"); */
 }
 .dialog-wide {

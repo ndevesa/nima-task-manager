@@ -102,7 +102,7 @@ export default function CustomizeDialog({ open, setOpen }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="bg-black border-white/20 text-white/70 max-w-xl">
+      <DialogContent className="bg-[#0f0f0f] backdrop-blur-2xl border-white/20 text-white/70 max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-white text-lg">
             Personalizar NIMA

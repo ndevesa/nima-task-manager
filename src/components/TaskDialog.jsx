@@ -137,7 +137,7 @@ export default function TaskDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="bg-black border-white/20 text-white max-w-2xl">
+      <DialogContent className="bg-[#0f0f0f] border-white/20 text-white max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {editingTaskId ? "Editar tarea" : "Nueva tarea"}
@@ -237,7 +237,7 @@ export default function TaskDialog({
                 <SelectTrigger className="bg-white/10 border-white/20 text-white w-full">
                   <SelectValue placeholder="Categoría (*)" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-white/20 text-white">
+                <SelectContent className="bg-transparent backdrop-blur-2xl border-white/20 text-white">
                   {data.columnOrder.map((colId) => (
                     <SelectItem key={colId} value={colId}>
                       {data.columns[colId].title}
@@ -257,7 +257,7 @@ export default function TaskDialog({
                 <SelectTrigger className="bg-white/10 border-white/20 w-full">
                   <SelectValue placeholder="Prioridad" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-white/20 text-white">
+                <SelectContent className="bg-transparent backdrop-blur-2xl border-white/20 text-white">
                   {priorities.map((priority) => (
                     <SelectItem key={priority} value={priority}>
                       {priority}

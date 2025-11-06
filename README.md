@@ -69,6 +69,10 @@ DONE:
 
 ✅ Agregar background propio attach file desde customizedialog.
 
+06/11
+
+✅ Exportar tablero en PDF.
+
 ---
 
 TODOS:

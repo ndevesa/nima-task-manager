@@ -8,6 +8,11 @@ import { CSS } from "@dnd-kit/utilities";
 import { Trash2, GripHorizontal, SquarePen } from "lucide-react";
 import { Button } from "./ui/button";
 import DraggableCard from "./DraggableCard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { createTaskDB } from "@/lib/BoardLogic";
 
 function DraggableColumn({
@@ -49,7 +54,7 @@ function DraggableColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className="w-full md:w-[380px] md:min-w-[380px] bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4 pt-2 shadow-xl"
+      className="w-full min-w-[300px] md:w-[380px] md:min-w-[380px] bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4 pt-2 shadow-xl"
     >
       {/* Header de la columna */}
       <div className="flex justify-center cursor-grab">
@@ -92,8 +97,8 @@ function DraggableColumn({
             >
               {column.title}{" "}
               {tasks.length > 0 && (
-                <div className="bg-gray-900 text-center rounded-full text-xs text-white/50 w-5 h-5">
-                  <small>({tasks.length})</small>
+                <div className="backdrop-blur-3xl text-center rounded-full text-xs text-white/50 w-5 h-5">
+                  <small>{tasks.length}</small>
                 </div>
               )}
             </h2>
@@ -140,27 +145,33 @@ function DraggableColumn({
         </div>
       </SortableContext>
 
-      <Button
-        onClick={() => {
-          setFormData({
-            title: "",
-            description: "",
-            category: column.id,
-            dueDate: null,
-            taskPriority: "",
-            subtasks: [],
-            tag: "",
-          });
-          setEditingTaskId(null);
-          setIsDialogOpen(true);
-        }}
-        className={`opacity-30 hover:opacity-100 border border-white/20 bg-transparent hover:bg-transparent hover:text-white/80 text-xs cursor-pointer 
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={() => {
+              setFormData({
+                title: "",
+                description: "",
+                category: column.id,
+                dueDate: null,
+                taskPriority: "",
+                subtasks: [],
+                tag: "",
+              });
+              setEditingTaskId(null);
+              setIsDialogOpen(true);
+            }}
+            className={`opacity-30 hover:opacity-100 border border-white/20 bg-transparent hover:bg-transparent hover:text-white/80 text-xs cursor-pointer 
     ${tasks.length > 0 ? "mt-5" : ""}`}
-        size="sm"
-      >
-        <SquarePen className="w-2 h-2" />
-        Nueva Tarea
-      </Button>
+            size="sm"
+          >
+            <SquarePen className="w-2 h-2" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Nueva Tarea</p>
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 }
