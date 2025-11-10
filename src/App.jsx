@@ -38,12 +38,10 @@ import CalendarView from "@/components/CalendarView";
 import CustomizeDialog from "@/components/CustomizeDialog";
 import TaskDialog from "@/components/TaskDialog";
 import InfoDialog from "@/components/InfoDialog";
-import WelcomeMessage from "@/components/WelcomeMessage";
+
 import LoadingScreen from "./components/LoadingScreen";
 import SidebarNima from "@/components/SidebarNima";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import exportData from "./lib/exportData";
-import ExportConfirmDialog from "./components/ExportConfirmDialog";
 
 export default function App() {
   // ---- AUTENTICACIÓN ----
@@ -62,7 +60,11 @@ export default function App() {
   }, [user]);
 
   // ---- ESTADOS PRINCIPALES ----
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({
+    tasks: {},
+    columns: {},
+    columnOrder: [],
+  });
   const [loadingData, setLoadingData] = useState(true);
   const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -74,6 +76,8 @@ export default function App() {
   const [activeType, setActiveType] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [currentBoardId, setCurrentBoardId] = useState(null);
+  const [boards, setBoards] = useState([]);
   const [filters, setFilters] = useState({
     query: "",
     priority: undefined,
@@ -126,7 +130,8 @@ export default function App() {
     editingTaskIdRef.current = editingTaskId;
   }, [editingTaskId]);
 
-  // ---- CARGA INICIAL DE DATOS ----
+  // ---- CARGA INICIAL DE DATOS ----ç
+
   useEffect(() => {
     async function ensureUserProfile(userId) {
       try {
@@ -157,7 +162,6 @@ export default function App() {
       }
     }
 
-    // 🔹 Aplica el fondo guardado del perfil
     async function applyUserBackground(userId) {
       const { data, error } = await supabase
         .from("profiles")
@@ -173,7 +177,6 @@ export default function App() {
       if (bg.startsWith("http")) {
         document.body.style.backgroundImage = `url(${bg})`;
       } else if (bg.includes("/")) {
-        // Crear URL firmada temporal para imágenes privadas
         const { data: signed, error: signedError } = await supabase.storage
           .from("user-backgrounds")
           .createSignedUrl(bg, 3600);
@@ -188,32 +191,48 @@ export default function App() {
       }
     }
 
-    if (hasLoadedInitialData || !user || isDemoMode) {
+    // ✅ Solo ejecutar una vez cuando el usuario carga
+    if (hasLoadedInitialData || !user) {
       if (!user) setLoadingData(false);
       return;
     }
 
-    // 🔹 Carga inicial de datos
+    // 🔹 Carga inicial de datos CON BOARDS
     const fetchData = async () => {
-      setLoadingData(true); // ← Agregar esto al inicio
+      setLoadingData(true);
 
       try {
         await ensureUserProfile(user.id);
 
-        const userData = await BoardLogic.loadUserData(user.id);
+        // 🆕 Cargar boards del usuario
+        const userBoards = await BoardLogic.loadUserBoards(user.id);
+        setBoards(userBoards);
 
-        if (userData && Object.keys(userData.tasks).length > 0) {
-          setData(userData);
-          await applyUserBackground(user.id);
+        // 🆕 Si tiene boards, cargar el primero por defecto
+        if (userBoards && userBoards.length > 0) {
+          const firstBoard = userBoards[0];
+          setCurrentBoardId(firstBoard.id);
+
+          // Cargar datos del primer board
+          const boardData = await BoardLogic.loadBoardData(
+            user.id,
+            firstBoard.id
+          );
+
+          if (boardData && Object.keys(boardData.columns).length > 0) {
+            setData(boardData);
+            await applyUserBackground(user.id);
+          } else {
+            // Tiene board pero sin datos - estructura correcta
+            setData({ columns: {}, tasks: {}, columnOrder: [] });
+          }
         } else {
-          // Usuario nuevo o sin datos
-          setIsDemoMode(true);
-          localStorage.setItem("demo-mode", "true");
+          // Usuario nuevo sin boards - Modo demo
           setData(initialData);
+          // NO setear isDemoMode aquí para evitar loop
         }
       } catch (err) {
         console.error("Error cargando datos:", err);
-        setIsDemoMode(true);
         setData(initialData);
       } finally {
         setLoadingData(false);
@@ -222,7 +241,26 @@ export default function App() {
     };
 
     fetchData();
-  }, [user, hasLoadedInitialData, isDemoMode]);
+  }, [user, hasLoadedInitialData]); // ← QUITAR isDemoMode de las dependencias
+
+  // ---- FUNCIÓN PARA CAMBIAR DE BOARD ----
+  const handleBoardChange = useCallback(
+    async (boardId) => {
+      if (boardId === currentBoardId) return;
+
+      setLoadingData(true);
+      try {
+        const boardData = await BoardLogic.loadBoardData(user.id, boardId);
+        setData(boardData);
+        setCurrentBoardId(boardId);
+      } catch (error) {
+        console.error("Error cambiando de board:", error);
+      } finally {
+        setLoadingData(false);
+      }
+    },
+    [currentBoardId, user]
+  );
 
   // ---- DND Sensors ----
   const sensors = useSensors(
@@ -271,7 +309,8 @@ export default function App() {
         setIsDialogOpen,
         setFormData,
         user,
-        attachmentFile
+        attachmentFile,
+        currentBoardId
       );
     },
     [
@@ -283,6 +322,7 @@ export default function App() {
       setIsDialogOpen,
       setFormData,
       user,
+      currentBoardId,
     ]
   );
 
@@ -309,34 +349,10 @@ export default function App() {
   );
 
   const handleAddNewColumn = useCallback(
-    () => BoardLogic.addNewColumn(dataRef.current, setData, user),
-    [setData, user]
+    () =>
+      BoardLogic.addNewColumn(dataRef.current, setData, user, currentBoardId),
+    [setData, user, currentBoardId]
   );
-
-  const handleImport = useCallback(() => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
-
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        try {
-          const importedData = JSON.parse(event.target.result);
-          setData(importedData);
-          alert("✅ Datos importados exitosamente!");
-        } catch (error) {
-          alert("❌ Error al importar. Archivo inválido.");
-        }
-      };
-
-      reader.readAsText(file);
-    };
-
-    input.click();
-  }, []);
 
   const handleOpenNewTask = useCallback(() => {
     setEditingTaskId(null);
@@ -362,86 +378,108 @@ export default function App() {
     setIsDragging(true);
   }, []);
 
-  const handleDragEnd = useCallback((event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) {
+  const handleDragEnd = useCallback(
+    async (event) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) {
+        setActiveId(null);
+        setActiveType(null);
+        setIsDragging(false);
+        return;
+      }
+
+      setData((prevData) => {
+        const isColumnDrag = prevData.columnOrder.includes(active.id);
+
+        if (isColumnDrag) {
+          const oldIndex = prevData.columnOrder.indexOf(active.id);
+          const newIndex = prevData.columnOrder.indexOf(over.id);
+          const newOrder = arrayMove(prevData.columnOrder, oldIndex, newIndex);
+
+          // 🔹 Actualizar posiciones de columnas en Supabase
+          if (user && !isDemoMode) {
+            newOrder.forEach((colId, index) => {
+              BoardLogic.updateColumnDB(colId, { position: index }).catch(
+                (error) =>
+                  console.error("Error actualizando posición columna:", error)
+              );
+            });
+          }
+
+          return {
+            ...prevData,
+            columnOrder: newOrder,
+          };
+        }
+
+        const activeColumnId = Object.keys(prevData.columns).find((colId) =>
+          prevData.columns[colId].taskIds.includes(active.id)
+        );
+        if (!activeColumnId) return prevData;
+
+        let overColumnId;
+        if (prevData.columnOrder.includes(over.id)) {
+          overColumnId = over.id;
+        } else {
+          overColumnId = Object.keys(prevData.columns).find((colId) =>
+            prevData.columns[colId].taskIds.includes(over.id)
+          );
+        }
+        if (!overColumnId) return prevData;
+
+        // 🔹 Si se movió a otra columna, actualizar en Supabase
+        if (activeColumnId !== overColumnId && user && !isDemoMode) {
+          BoardLogic.updateTaskDB(active.id, { column_id: overColumnId }).catch(
+            (error) => console.error("Error actualizando tarea:", error)
+          );
+        }
+
+        if (activeColumnId === overColumnId) {
+          const column = prevData.columns[activeColumnId];
+          const oldIndex = column.taskIds.indexOf(active.id);
+          const newIndex = column.taskIds.indexOf(over.id);
+          if (oldIndex === -1 || newIndex === -1) return prevData;
+          const newTaskIds = arrayMove(column.taskIds, oldIndex, newIndex);
+          return {
+            ...prevData,
+            columns: {
+              ...prevData.columns,
+              [activeColumnId]: { ...column, taskIds: newTaskIds },
+            },
+          };
+        } else {
+          const activeColumn = prevData.columns[activeColumnId];
+          const overColumn = prevData.columns[overColumnId];
+          const activeTaskIds = activeColumn.taskIds.filter(
+            (id) => id !== active.id
+          );
+
+          let overTaskIds;
+          if (prevData.columnOrder.includes(over.id)) {
+            overTaskIds = [...overColumn.taskIds, active.id];
+          } else {
+            const overIndex = overColumn.taskIds.indexOf(over.id);
+            overTaskIds = [...overColumn.taskIds];
+            overTaskIds.splice(overIndex, 0, active.id);
+          }
+
+          return {
+            ...prevData,
+            columns: {
+              ...prevData.columns,
+              [activeColumnId]: { ...activeColumn, taskIds: activeTaskIds },
+              [overColumnId]: { ...overColumn, taskIds: overTaskIds },
+            },
+          };
+        }
+      });
+
       setActiveId(null);
       setActiveType(null);
       setIsDragging(false);
-      return;
-    }
-
-    setData((prevData) => {
-      const isColumnDrag = prevData.columnOrder.includes(active.id);
-
-      if (isColumnDrag) {
-        const oldIndex = prevData.columnOrder.indexOf(active.id);
-        const newIndex = prevData.columnOrder.indexOf(over.id);
-        return {
-          ...prevData,
-          columnOrder: arrayMove(prevData.columnOrder, oldIndex, newIndex),
-        };
-      }
-
-      const activeColumnId = Object.keys(prevData.columns).find((colId) =>
-        prevData.columns[colId].taskIds.includes(active.id)
-      );
-      if (!activeColumnId) return prevData;
-
-      let overColumnId;
-      if (prevData.columnOrder.includes(over.id)) {
-        overColumnId = over.id;
-      } else {
-        overColumnId = Object.keys(prevData.columns).find((colId) =>
-          prevData.columns[colId].taskIds.includes(over.id)
-        );
-      }
-      if (!overColumnId) return prevData;
-
-      if (activeColumnId === overColumnId) {
-        const column = prevData.columns[activeColumnId];
-        const oldIndex = column.taskIds.indexOf(active.id);
-        const newIndex = column.taskIds.indexOf(over.id);
-        if (oldIndex === -1 || newIndex === -1) return prevData;
-        const newTaskIds = arrayMove(column.taskIds, oldIndex, newIndex);
-        return {
-          ...prevData,
-          columns: {
-            ...prevData.columns,
-            [activeColumnId]: { ...column, taskIds: newTaskIds },
-          },
-        };
-      } else {
-        const activeColumn = prevData.columns[activeColumnId];
-        const overColumn = prevData.columns[overColumnId];
-        const activeTaskIds = activeColumn.taskIds.filter(
-          (id) => id !== active.id
-        );
-
-        let overTaskIds;
-        if (prevData.columnOrder.includes(over.id)) {
-          overTaskIds = [...overColumn.taskIds, active.id];
-        } else {
-          const overIndex = overColumn.taskIds.indexOf(over.id);
-          overTaskIds = [...overColumn.taskIds];
-          overTaskIds.splice(overIndex, 0, active.id);
-        }
-
-        return {
-          ...prevData,
-          columns: {
-            ...prevData.columns,
-            [activeColumnId]: { ...activeColumn, taskIds: activeTaskIds },
-            [overColumnId]: { ...overColumn, taskIds: overTaskIds },
-          },
-        };
-      }
-    });
-
-    setActiveId(null);
-    setActiveType(null);
-    setIsDragging(false);
-  }, []);
+    },
+    [user, isDemoMode]
+  ); // ← Agregar user e isDemoMode como dependencias
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
@@ -487,10 +525,9 @@ export default function App() {
       const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
       return { column, tasks };
     });
-  }, [data]); // ← Cambiar a solo [data]
+  }, [data]);
 
   // ---- RENDER CONDICIONAL ANTES DE USAR getActiveTask ----
-
   if (!user) {
     return <Login />;
   }
@@ -498,7 +535,7 @@ export default function App() {
   // ← AHORA sí llamar getActiveTask DESPUÉS de validar data
   const activeTask = getActiveTask();
 
-  if (loading || loadingData || !data) {
+  if (loading || loadingData || !data || !data.columnOrder) {
     return <LoadingScreen />;
   }
 
@@ -506,22 +543,22 @@ export default function App() {
     <SidebarProvider>
       {/* === SIDEBAR === */}
       <SidebarNima
+        user={user}
         userName={userName}
+        currentBoardId={currentBoardId}
+        onBoardChange={handleBoardChange}
         handleOpenNewTask={handleOpenNewTask}
         handleAddNewColumn={handleAddNewColumn}
         setIsCalendarOpen={setIsCalendarOpen}
-        handleExport={() => exportData(data)}
-        handleImport={handleImport}
         setIsCustomizeDialogOpen={setIsCustomizeDialogOpen}
         setIsInfodialogOpen={setIsInfodialogOpen}
       />
 
       {/* === MAIN CONTENT === */}
       <div className="flex-1 overflow-hidden relative z-10">
-        {/* === MOBILE TOGGLE BUTTON === */}
         <SidebarTrigger
           color="#fff"
-          className="fixed h-10 w-10 text-white bg-[#0f0f0f] hover:bg-[#0f0f0f] mt-5 ml-5 z-50  cursor-pointer"
+          className="fixed h-10 w-10 text-white bg-[#0f0f0f]  mt-5 ml-5 z-50  cursor-pointer"
         />
 
         {/* HEADER */}
@@ -551,9 +588,6 @@ export default function App() {
               isDragging ? "is-dragging" : ""
             }`}
           >
-            {/* BIENVENIDA */}
-            <WelcomeMessage user={user} data={data} />
-
             {/* TABLERO PRINCIPAL */}
             <div className="flex-1 w-full p-3 flex gap-4 overflow-x-auto bg-white/5 rounded-2xl border border-white/10 shadow-xl">
               <SortableContext
@@ -604,15 +638,6 @@ export default function App() {
                   })}
               </SortableContext>
             </div>
-
-            {/* FOOTER */}
-            <footer className="text-center w-full py-2 fixed bottom-0">
-              <small className="text-gray-400">
-                <a href="https://www.nicolasdev.com/" target="_blank">
-                  www.nicolasdev.com
-                </a>
-              </small>
-            </footer>
 
             {/* DIALOGS */}
             <CustomizeDialog

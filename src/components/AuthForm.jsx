@@ -28,14 +28,13 @@ export default function AuthForm() {
         email,
         password,
         options: {
-          data: { full_name: fullname }, // 👈 Guarda el nombre en user_metadata
+          data: { full_name: fullname },
         },
       });
 
       if (error) {
         setMessage(error.message);
       } else {
-        // 👇 Crear perfil con fullname en la tabla profiles
         if (data.user) {
           await supabase.from("profiles").insert([
             {
@@ -82,7 +81,7 @@ export default function AuthForm() {
         <Button
           variant="outline"
           type="submit"
-          className="cursor-pointer w-fit mx-auto text-black"
+          className="cursor-pointer w-fit mx-auto text-[#0f0f0f] border-0"
         >
           {isLogin ? "Entrar" : "Crear cuenta"}
         </Button>

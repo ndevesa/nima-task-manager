@@ -13,25 +13,35 @@ function Login() {
 
   if (loading) return <LoadingScreen />;
 
+  const colors = {
+    second: "221,74,255", // RGB like ""
+    third: "0,220,255", // RGB like ""
+    fourth: "200,50,50", // RGB like ""
+    fifth: "180,180,50", // RGB like ""
+    sixth: "140,100,255", // RGB like ""
+  };
+
   if (!user)
     return (
       <div
         className="flex items-center justify-center h-screen p-4"
-        style={{ backgroundImage: `url(${bg})`, backgroundSize: "cover" }}
+        /* style={{ backgroundImage: `url(${bg})`, backgroundSize: "cover" }} */
       >
-        <FlickeringGrid
+        <BubbleBackground
+          interactive={true}
           className="absolute inset-0"
-          squareSize={4}
+          colors={colors}
+          /*  squareSize={4}
           gridGap={6}
           flickerChance={0.3}
           color="rgb(100, 100, 100)"
-          maxOpacity={0.2}
+          maxOpacity={0.2} */
         />
         <div className="rounded-2xl shadow-xl bg-gray backdrop-blur-lg border border-white/20 w-full text-center text-white max-w-md py-5 px-4 md:py-[40px]">
           <h2 className="text-2xl font-bold mb-2">Bienvenido a NIMA</h2>
 
           <p className=" mb-4 text-sm">
-            Iniciá sesión para guardar tu tablero y sincronizar tus tareas.
+            Iniciá sesión para guardar tus tableros y sincronizar tus tareas.
           </p>
           <AuthForm
             supabaseClient={supabase}

@@ -2,12 +2,13 @@ import { supabase } from "./supabaseClient";
 import { uploadTaskAttachment, deleteTaskAttachment } from "./storageHelpers";
 
 // ========== CARGAR DATOS ==========
-export const loadUserData = async (userId) => {
+export const loadUserData = async (userId, activeBoardId) => {
   try {
     const { data: columns, error: colError } = await supabase
       .from("columns")
       .select("id, title, position")
       .eq("user_id", userId)
+      .eq("board_id", activeBoardId)
       .order("position");
 
     if (colError) throw colError;
@@ -18,6 +19,7 @@ export const loadUserData = async (userId) => {
         "due_date, priority, tag, column_id, attachment_url, attachment_name, attachment_type, id, title, description, subtasks"
       )
       .eq("user_id", userId)
+      .eq("board_id", activeBoardId)
       .order("created_at");
 
     if (taskError) throw taskError;
@@ -63,10 +65,10 @@ export const loadUserData = async (userId) => {
 };
 
 // ========== CRUD: COLUMNS ==========
-export const createColumnDB = async (title, userId, position) => {
+export const createColumnDB = async (title, userId, position, boardId) => {
   const { data, error } = await supabase
     .from("columns")
-    .insert([{ user_id: userId, title, position }])
+    .insert([{ user_id: userId, title, position, board_id: boardId }])
     .select()
     .single();
 
@@ -88,12 +90,13 @@ export const deleteColumnDB = async (columnId) => {
 };
 
 // ========== CRUD: TASKS ==========
-export const createTaskDB = async (task, columnId, userId) => {
+export const createTaskDB = async (task, columnId, userId, boardId) => {
   const { data, error } = await supabase
     .from("tasks")
     .insert([
       {
         user_id: userId,
+        board_id: boardId,
         column_id: columnId,
         title: task.title,
         description: task.description,
@@ -127,7 +130,6 @@ export const deleteTaskDB = async (taskId) => {
 };
 
 // ========== OPERACIONES EN ESTADO LOCAL ==========
-
 export const editTask = (
   taskId,
   data,
@@ -196,12 +198,13 @@ export const deleteTask = async (data, taskId, setData, user) => {
   });
 };
 
-export const addNewColumn = async (data, setData, user) => {
+export const addNewColumn = async (data, setData, user, activeBoardId) => {
   try {
     const supaCol = await createColumnDB(
       "Nueva columna",
       user.id,
-      data.columnOrder.length
+      data.columnOrder.length,
+      activeBoardId
     );
     const newCol = { id: supaCol.id, title: supaCol.title, taskIds: [] };
 
@@ -260,10 +263,9 @@ export const handleSaveTask = async (
   setIsDialogOpen,
   setFormData,
   user,
-  attachmentFile
+  attachmentFile,
+  activeBoardId
 ) => {
-  /* console.log("🟢 === INICIO handleSaveTask ==="); */
-
   try {
     if (!data.columns[formData.category]) {
       console.error("❌ La columna no existe:", formData.category);
@@ -280,7 +282,6 @@ export const handleSaveTask = async (
 
     // Si hay nuevo archivo, subirlo
     if (attachmentFile) {
-      /* console.log("📤 Subiendo archivo a Supabase..."); */
       const uploaded = await uploadTaskAttachment(
         attachmentFile,
         user.id,
@@ -297,10 +298,7 @@ export const handleSaveTask = async (
     }
 
     if (editingTaskId) {
-      /* console.log("✏️ MODO EDICIÓN - taskId:", editingTaskId); */
-
       if (user) {
-        /* console.log("📡 Actualizando en Supabase..."); */
         await updateTaskDB(editingTaskId, {
           title: formData.title,
           description: formData.description,
@@ -311,10 +309,8 @@ export const handleSaveTask = async (
           column_id: formData.category,
           ...attachmentData,
         });
-        /* console.log("✅ Supabase actualizado"); */
       }
 
-      /* console.log("🔄 Actualizando estado local..."); */
       setData({
         ...data,
         tasks: {
@@ -333,16 +329,13 @@ export const handleSaveTask = async (
       });
       console.log("✅ Estado local actualizado");
     } else {
-      /* console.log("➕ MODO CREACIÓN"); */
-
       const newTask = await createTaskDB(
         { ...formData, ...attachmentData },
         formData.category,
-        user.id
+        user.id,
+        activeBoardId
       );
-      /*   console.log("✅ Tarea creada en Supabase:", newTask); */
 
-      /* console.log("🔄 Actualizando estado local..."); */
       setData({
         ...data,
         tasks: {
@@ -366,10 +359,8 @@ export const handleSaveTask = async (
           },
         },
       });
-      /*  console.log("✅ Estado local actualizado con nueva tarea"); */
     }
 
-    /*  console.log("🧹 Limpiando formulario..."); */
     setIsDialogOpen(false);
     setEditingTaskId(null);
     setFormData({
@@ -384,7 +375,6 @@ export const handleSaveTask = async (
       attachment_name: null,
       attachment_type: null,
     });
-    /*  console.log("✅ === FIN handleSaveTask ==="); */
   } catch (error) {
     console.error("❌ === ERROR EN handleSaveTask ===");
     console.error("Error completo:", error);
@@ -394,7 +384,7 @@ export const handleSaveTask = async (
 };
 
 export const calculateTasks = (data) => {
-  if (!data?.columns) return 0; // 👈 protege contra null o undefined
+  if (!data?.columns) return 0;
   return Object.values(data.columns).reduce(
     (acc, col) => acc + (col.taskIds?.length || 0),
     0
@@ -431,3 +421,231 @@ export const clearLocalStorage = () => {
     return false;
   }
 };
+
+// ========== GESTIÓN DE BOARDS ==========
+
+// 🔹 Cargar todos los boards del usuario
+export async function loadUserBoards(userId) {
+  try {
+    const { data: boards, error } = await supabase
+      .from("boards")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+
+    // Si no tiene boards, crear el "Tablero Principal"
+    if (!boards || boards.length === 0) {
+      const mainBoard = await createMainBoard(userId);
+      return [mainBoard];
+    }
+
+    return boards;
+  } catch (error) {
+    console.error("Error cargando boards:", error);
+    return [];
+  }
+}
+
+// 🔹 Crear el "Tablero Principal" por defecto
+export async function createMainBoard(userId) {
+  try {
+    // Crear el board
+    const { data: board, error: boardError } = await supabase
+      .from("boards")
+      .insert([
+        {
+          user_id: userId,
+          title: "Tablero Principal",
+        },
+      ])
+      .select()
+      .single();
+
+    if (boardError) throw boardError;
+
+    // Crear las columnas por defecto
+    await createDefaultColumns(board.id, userId);
+
+    return board;
+  } catch (error) {
+    console.error("Error creando tablero principal:", error);
+    throw error;
+  }
+}
+
+// 🔹 Crear un nuevo board
+export async function createBoard(userId, title) {
+  try {
+    // Verificar límite de 3 boards
+    const { data: existingBoards, error: countError } = await supabase
+      .from("boards")
+      .select("id")
+      .eq("user_id", userId);
+
+    if (countError) throw countError;
+
+    if (existingBoards && existingBoards.length >= 3) {
+      throw new Error("Ya alcanzaste el límite de 3 tableros");
+    }
+
+    // Crear el board
+    const { data: board, error: boardError } = await supabase
+      .from("boards")
+      .insert([
+        {
+          user_id: userId,
+          title: title,
+        },
+      ])
+      .select()
+      .single();
+
+    if (boardError) throw boardError;
+
+    // Crear columnas por defecto
+    await createDefaultColumns(board.id, userId);
+
+    return board;
+  } catch (error) {
+    console.error("Error creando board:", error);
+    throw error;
+  }
+}
+
+// 🔹 Crear columnas por defecto para un board
+export async function createDefaultColumns(boardId, userId) {
+  const defaultColumns = [
+    { title: "Por hacer", position: 0 },
+    { title: "Revisión", position: 1 },
+    { title: "Completado", position: 2 },
+  ];
+
+  const columnsToInsert = defaultColumns.map((col) => ({
+    board_id: boardId,
+    user_id: userId,
+    title: col.title,
+    position: col.position,
+  }));
+
+  const { error } = await supabase.from("columns").insert(columnsToInsert);
+
+  if (error) {
+    console.error("Error creando columnas por defecto:", error);
+    throw error;
+  }
+}
+
+// 🔹 Cargar datos de un board específico
+export async function loadBoardData(userId, boardId) {
+  try {
+    // Cargar columnas del board
+    const { data: columns, error: colError } = await supabase
+      .from("columns")
+      .select("id, title, position")
+      .eq("board_id", boardId)
+      .eq("user_id", userId)
+      .order("position", { ascending: true });
+
+    if (colError) throw colError;
+
+    // Cargar tareas del board
+    const { data: tasks, error: taskError } = await supabase
+      .from("tasks")
+      .select(
+        "due_date, priority, tag, column_id, attachment_url, attachment_name, attachment_type, id, title, description, subtasks"
+      )
+      .eq("board_id", boardId)
+      .eq("user_id", userId)
+      .order("created_at");
+
+    if (taskError) throw taskError;
+
+    // Organizar igual que loadUserData para mantener compatibilidad
+    const tasksById = Object.fromEntries(
+      tasks.map((t) => [
+        t.id,
+        {
+          id: t.id,
+          content: t.title,
+          description: t.description,
+          dueDate: t.due_date,
+          tag: t.tag,
+          subtasks: t.subtasks || [],
+          attachment_url: t.attachment_url || null,
+          attachment_name: t.attachment_name || null,
+          attachment_type: t.attachment_type || null,
+          taskPriority: t.priority,
+        },
+      ])
+    );
+
+    const columnsById = Object.fromEntries(
+      columns.map((c) => [
+        c.id,
+        {
+          id: c.id,
+          title: c.title,
+          taskIds: tasks.filter((t) => t.column_id === c.id).map((t) => t.id),
+        },
+      ])
+    );
+
+    return {
+      tasks: tasksById,
+      columns: columnsById,
+      columnOrder: columns.map((c) => c.id),
+    };
+  } catch (error) {
+    console.error("Error cargando datos del board:", error);
+    throw error;
+  }
+}
+
+// 🔹 Eliminar un board
+export async function deleteBoard(boardId, userId) {
+  try {
+    // Primero eliminar todas las tareas
+    await supabase
+      .from("tasks")
+      .delete()
+      .eq("board_id", boardId)
+      .eq("user_id", userId);
+
+    // Luego eliminar todas las columnas
+    await supabase
+      .from("columns")
+      .delete()
+      .eq("board_id", boardId)
+      .eq("user_id", userId);
+
+    // Finalmente eliminar el board
+    const { error } = await supabase
+      .from("boards")
+      .delete()
+      .eq("id", boardId)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error eliminando board:", error);
+    throw error;
+  }
+}
+
+// 🔹 Renombrar un board
+export async function renameBoard(boardId, userId, newTitle) {
+  try {
+    const { error } = await supabase
+      .from("boards")
+      .update({ title: newTitle })
+      .eq("id", boardId)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error renombrando board:", error);
+    throw error;
+  }
+}

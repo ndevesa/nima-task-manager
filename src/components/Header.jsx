@@ -11,7 +11,6 @@ import { Database, Eye } from "lucide-react";
 import TaskSearch from "./TaskSearch";
 
 export default function Header({
-  userName,
   data,
   isDemoMode,
   handleLoadRealData,
@@ -28,12 +27,6 @@ export default function Header({
               <AlertDescription className="pr-6 text-white">
                 Modo Demo Activado - Los cambios no se guardarán
               </AlertDescription>
-              <button
-                onClick={handleLoadRealData}
-                className="p-1 px-2 rounded text-orange-400 cursor-pointer"
-              >
-                Volver a mis datos →
-              </button>
             </Alert>
           )}
 
@@ -59,8 +52,6 @@ export default function Header({
             <TaskSearch columns={data.columns} onSearchChange={setFilters} />
           )}
         </div>
-
-        <p className="text-white absolute right-10 top-8">{userName}</p>
 
         {/* <div
             id="Menu"

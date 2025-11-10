@@ -14,31 +14,51 @@ export default function InfoDialog({ isOpen, onClose }) {
       <DialogContent className="bg-[#0f0f0f] border-white/20 text-white/70">
         <DialogHeader>
           <DialogTitle className="text-white">Acerca de NIMA</DialogTitle>
-          <DialogDescription className="mt-4 text-white/70">
-            NIMA es un task manager al estilo <i>Trello</i>, desarrollado para
-            gestionar tareas de manera eficiente. <br /> Esta herramienta está
-            diseñada para mejorar la productividad y facilitar la gestión de
-            proyectos personales o profesionales.
-            <span className="block mt-4 mb-2 text-white">Almacenamiento:</span>
-            Tus datos se guardan automáticamente en tu navegador. Son privados y
-            no salen de tu dispositivo.
+          <DialogDescription className="mt-4 text-white/80">
+            <p className="mb-2">
+              <b>NIMA</b> es una app de gestión de tareas inspirada en el estilo
+              de Trello, pensada para organizar tu trabajo y tus proyectos de
+              forma ágil y visual.
+            </p>
+            <p className="mb-2">
+              Te permite crear tableros, columnas y tareas, moverlas fácilmente,
+              y mantener todo sincronizado entre dispositivos.
+            </p>
+            <p className="mb-5">
+              Ideal para uso personal o profesional, NIMA busca simplificar tu
+              día a día sin complicaciones.
+            </p>
+
+            <strong className="mb-2 block">
+              💾 Almacenamiento y seguridad
+            </strong>
+            <p className="mb-5">
+              Tus datos se guardan de forma segura y privada.
+              <br />
+              Si iniciás sesión, se sincronizan con la nube para que puedas
+              acceder a ellos desde cualquier lugar.
+            </p>
+
+            <strong className="mb-2 block">
+              ⚙️ Características principales
+            </strong>
+            <ul>
+              <li>Crear, editar y eliminar tableros, columnas y tareas.</li>
+              <li>
+                Organizar tareas con etiquetas, prioridades y fechas de
+                vencimiento.
+              </li>
+              <li>Arrastrar y soltar tareas entre columnas.</li>
+              <li>Vista de calendario para planificar tus semanas.</li>
+              <li>
+                Búsqueda avanzada para encontrar cualquier tarea al instante.
+              </li>
+              <li>Exportar tus tableros en PDF.</li>
+
+              <li>Interfaz rápida, minimalista y adaptable.</li>
+            </ul>
           </DialogDescription>
         </DialogHeader>
-
-        <div>
-          <p className="text-white">Características principales:</p>
-          <ul className="list-disc list-inside mt-2">
-            <li>Crear, editar y eliminar tareas.</li>
-            <li>Organizar tareas en columnas personalizables.</li>
-            <li>Arrastrar y soltar tareas entre columnas.</li>
-            <li>Establecer prioridades y fechas de vencimiento.</li>
-            <li>Importar y exportar datos en formato JSON.</li>
-            <small className="mt-4 block text-white">¡NUEVO!</small>
-            <li>Modo Calendario</li>
-            <li>Autenticación de Usuarios</li>
-            <li>Búsqueda avanzada de tareas</li>
-          </ul>
-        </div>
 
         <small className="text-white/50 text-center mt-4">
           Creado por
