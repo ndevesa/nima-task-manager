@@ -9,15 +9,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export function DeleteBoardDialog({ open, onOpenChange, onConfirm }) {
+export function DeleteBoardDialog({ open, onOpenChange, onConfirm, boards }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Eliminar tablero?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminarán permanentemente
-            todas las columnas y tareas de este tablero.
+            Recuerda que puedes activar este tablero y exportarlo como PDF antes
+            de eliminarlo. Esta acción no se puede deshacer. Se eliminarán
+            permanentemente todas las columnas y tareas de este tablero.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

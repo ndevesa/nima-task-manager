@@ -298,76 +298,6 @@ const SidebarNima = memo(function SidebarNima({
           </SidebarHeader>
 
           <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70 flex items-center gap-2">
-              Mis Tableros ({boards.length} de 3)
-            </SidebarGroupLabel>
-            <div className="text-sm text-gray-500 ml-2 mb-2"></div>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {boards.map((board) => (
-                  <SidebarMenuItem key={board.id}>
-                    <SidebarMenuButton
-                      onClick={() => onBoardChange(board.id)}
-                      className={`cursor-pointer group flex items-center justify-between transition-all  ${
-                        currentBoardId === board.id
-                          ? "bg-blue-500  text-white"
-                          : "hover:bg-white/10 hover:text-white"
-                      }`}
-                    >
-                      <div className="flex gap-2 items-center ">
-                        <ClipboardList className="w-4 h-4" />
-                        <span>{board.title}</span>
-                      </div>
-
-                      <div className="flex gap-2 items-center ">
-                        <Edit2
-                          onClick={(e) => handleEditClick(e, board)}
-                          className="w-3 h-3 text-blue-400 hover:text-blue-300"
-                          title="Editar tablero"
-                        />
-
-                        <Trash2
-                          onClick={(e) => handleDeleteClick(e, board)}
-                          className="w-3 h-3 text-red-400 hover:text-red-300"
-                          title="Eliminar tablero"
-                        />
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-
-                {boards.length === 0 && (
-                  <div className="text-center text-gray-500 py-8 px-2">
-                    <p className="text-sm">No tenés tableros todavía</p>
-                    <p className="text-xs mt-1 opacity-70">
-                      Creá tu primer tablero
-                    </p>
-                  </div>
-                )}
-
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => setShowCreateDialog(true)}
-                    disabled={!canCreateMoreBoards || creatingBoard}
-                    className={`cursor-pointer mt-2 text-center transition-all ${
-                      canCreateMoreBoards && !creatingBoard
-                        ? "hover:bg-white/70"
-                        : "bg-gray-700 text-white/70 cursor-not-allowed opacity-50"
-                    }`}
-                  >
-                    <Plus className="w-4 h-4" />
-                    {creatingBoard
-                      ? "Creando..."
-                      : canCreateMoreBoards
-                      ? "Crear tablero"
-                      : "Límite alcanzado"}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
               Acciones
             </SidebarGroupLabel>
@@ -452,6 +382,76 @@ const SidebarNima = memo(function SidebarNima({
           </SidebarGroup>
 
           <SidebarGroup>
+            <SidebarGroupLabel className="text-white/70 flex items-center gap-2">
+              Mis Tableros ({boards.length} de 3)
+            </SidebarGroupLabel>
+            <div className="text-sm text-gray-500 ml-2 mb-2"></div>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {boards.map((board) => (
+                  <SidebarMenuItem key={board.id}>
+                    <SidebarMenuButton
+                      onClick={() => onBoardChange(board.id)}
+                      className={`cursor-pointer group flex items-center justify-between transition-all  ${
+                        currentBoardId === board.id
+                          ? "border-1 border-white/10 hover:bg-transparent hover:text-white text-white"
+                          : "hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex gap-2 items-center ">
+                        <ClipboardList className="w-4 h-4" />
+                        <span>{board.title}</span>
+                      </div>
+
+                      <div className="flex gap-2 items-center ">
+                        <Edit2
+                          onClick={(e) => handleEditClick(e, board)}
+                          className="w-3 h-3 text-blue-400 hover:text-blue-300"
+                          title="Editar tablero"
+                        />
+
+                        <Trash2
+                          onClick={(e) => handleDeleteClick(e, board)}
+                          className="w-3 h-3 text-red-400 hover:text-red-300"
+                          title="Eliminar tablero"
+                        />
+                      </div>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+
+                {boards.length === 0 && (
+                  <div className="text-center text-gray-500 py-8 px-2">
+                    <p className="text-sm">No tenés tableros todavía</p>
+                    <p className="text-xs mt-1 opacity-70">
+                      Creá tu primer tablero
+                    </p>
+                  </div>
+                )}
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => setShowCreateDialog(true)}
+                    disabled={!canCreateMoreBoards || creatingBoard}
+                    className={`cursor-pointer mt-2 text-center transition-all ${
+                      canCreateMoreBoards && !creatingBoard
+                        ? "hover:bg-white/70"
+                        : "bg-gray-700 text-white/70 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <Plus className="w-4 h-4" />
+                    {creatingBoard
+                      ? "Creando..."
+                      : canCreateMoreBoards
+                      ? "Crear tablero"
+                      : "Límite alcanzado"}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
               Cuenta
             </SidebarGroupLabel>
@@ -461,21 +461,18 @@ const SidebarNima = memo(function SidebarNima({
                   <p className="text-white/50 ml-2 text-sm">
                     Sesión de {userName}
                   </p>
+                  <SidebarMenuButton
+                    onClick={() => supabase.auth.signOut()}
+                    className="cursor-pointer mt-2"
+                    id="button-logout"
+                  >
+                    <LogOut className="w-5 h-5" title="Logout" alt="Logout" />
+                    Cerrar sesión
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-
-          <SidebarFooter>
-            <SidebarMenuButton
-              onClick={() => supabase.auth.signOut()}
-              className="cursor-pointer"
-              id="button-logout"
-            >
-              <LogOut className="w-5 h-5" title="Logout" alt="Logout" />
-              Cerrar sesión
-            </SidebarMenuButton>
-          </SidebarFooter>
         </SidebarContent>
       </Sidebar>
     </>

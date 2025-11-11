@@ -50,7 +50,7 @@ export function CreateBoardDialog({ open, onOpenChange, onConfirm }) {
               setBoardTitle(e.target.value);
               setError("");
             }}
-            placeholder="Nombre del tablero..."
+            placeholder="Nombre del tablero"
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             maxLength={50}
             autoFocus

@@ -6,7 +6,7 @@ function LoadingScreen() {
     <div className="min-h-screen flex flex-col gap-2 items-center justify-center">
       <div className="flex flex-col items-center justify-center gap-4 text-white">
         <LoaderPinwheel size={24} className="animate-spin" />
-        <p className="font-semibold">Cargando NIMA</p>
+        <p className="font-semibold">Cargando tus tableros</p>
       </div>
     </div>
   );

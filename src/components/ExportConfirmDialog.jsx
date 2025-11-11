@@ -14,10 +14,10 @@ export function ExportConfirmDialog({ open, onOpenChange, onConfirm }) {
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Exportar tablero a PDF?</AlertDialogTitle>
+          <AlertDialogTitle>¿Exportar este tablero a PDF?</AlertDialogTitle>
           <AlertDialogDescription>
-            Se generará un archivo PDF con todas las columnas y tareas de tu
-            tablero.
+            Se descargará un archivo PDF con todas las columnas y tareas del
+            tablero a tu dispositivo.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

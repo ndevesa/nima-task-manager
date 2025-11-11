@@ -21,7 +21,11 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 import { bgImages, bgColors } from "../constants/backgrounds";
 
-export default function CustomizeDialog({ open, setOpen }) {
+export default function CustomizeDialog({
+  open,
+  setOpen,
+  setIsCustomizeDialogOpen,
+}) {
   const { user } = useAuth();
 
   const [selectedImage, setSelectedImage] = useState(null);

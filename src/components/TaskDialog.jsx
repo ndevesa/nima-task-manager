@@ -374,7 +374,7 @@ export default function TaskDialog({
               setIsOpen(false); // ← Simple
             }}
             disabled={uploadingFile}
-            className="text-black"
+            className="text-black cursor-pointer"
           >
             Cancelar
           </Button>
@@ -382,7 +382,7 @@ export default function TaskDialog({
           <Button
             onClick={handleSave}
             disabled={!formData.title || uploadingFile}
-            className="bg-blue-600 hover:bg-blue-700 min-w-[120px]"
+            className="bg-blue-600 hover:bg-blue-700 min-w-[120px] cursor-pointer"
           >
             {uploadingFile ? (
               <div className="flex items-center gap-2">
