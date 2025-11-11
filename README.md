@@ -81,3 +81,8 @@ TODOS:
 ⚙️ Modo offline-first + sync con Supabase → Guardar cambios localmente y sincronizar después.
 ⚙️ Compartir tableros con otros usuarios → Requiere roles y control de permisos.
 ⚙️ Comentarios en tareas (mini chat) → Da interacción social, útil si apuntás a colaboración.
+
+⚙️ Corregir taskdialog para que no se ensanche de mas al pegar links.
+⚙️ Limitar description para la preview de las tareas en las columnas, para que no se pasen de altura.
+⚙️ Generar un task dialog mas grande para visualizar mejor las tareas, sobre todo al momento de cargar tareas con descripciones largas, se vuelve molesta la UI.
+⚙️

@@ -286,7 +286,13 @@ const SidebarNima = memo(function SidebarNima({
         <SidebarContent className="bg-[#0f0f0f] py-4 px-3">
           <SidebarHeader className="py-0">
             <SidebarGroup>
-              <h1 className="text-2xl font-bold leading-none">NIMA</h1>
+              <img
+                src="/nima-white.svg"
+                className="mb-1"
+                alt="NIMA logo"
+                title="NIMA logo"
+                width="100"
+              />
               <a
                 href="https://www.nicolasdev.com/"
                 target="_blank"
