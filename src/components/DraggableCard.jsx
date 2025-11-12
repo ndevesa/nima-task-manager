@@ -133,9 +133,19 @@ function DraggableCard({ task, onDeleteTask, onEdit }) {
         )}
 
         <h3 className="font-semibold text-sm pr-20">{task.content}</h3>
-        {task.description && (
-          <p className="text-sm text-white/70 mt-1">{task.description}</p>
-        )}
+        {(() => {
+          if (!task.description) return null;
+          const words = task.description.split(" ");
+          const truncated =
+            words.length > 15
+              ? words.slice(0, 15).join(" ") + "..."
+              : task.description;
+          return (
+            <p className="text-sm text-white/70 mt-1 break-words line-clamp-3">
+              {truncated}
+            </p>
+          );
+        })()}
 
         <Separator className="my-3 bg-white/10" />
 

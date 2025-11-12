@@ -9,7 +9,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarHeader,
-  SidebarFooter,
 } from "@/components/ui/sidebar";
 import {
   SquarePen,
@@ -20,15 +19,18 @@ import {
   LogOut,
   Download,
   Plus,
-  Trash2,
   ClipboardList,
-  Edit2,
+  Settings,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { supabase } from "@/lib/supabaseClient";
 import { ExportConfirmDialog } from "./ExportConfirmDialog";
 import { CreateBoardDialog } from "./CreateBoardDialog";
-import { DeleteBoardDialog } from "./DeleteBoardDialog";
-import { EditBoardDialog } from "./EditBoardDialog";
+import BoardSettingsDialog from "./BoardSettingsDialog";
 import * as BoardLogic from "@/lib/BoardLogic";
 import { exportData } from "@/lib/exportData";
 
@@ -46,12 +48,12 @@ const SidebarNima = memo(function SidebarNima({
   const [boards, setBoards] = useState([]);
   const [loadingBoards, setLoadingBoards] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [creatingBoard, setCreatingBoard] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [boardToDelete, setBoardToDelete] = useState(null);
-  const [boardToEdit, setBoardToEdit] = useState(null);
+
+  // Estados para el nuevo BoardSettingsDialog
+  const [selectedBoard, setSelectedBoard] = useState(null);
+  const [showBoardSettings, setShowBoardSettings] = useState(false);
 
   const handleExport = useCallback(async () => {
     if (!currentBoardId) {
@@ -79,13 +81,11 @@ const SidebarNima = memo(function SidebarNima({
 
       if (tasksError) throw tasksError;
 
-      // Transformar a la estructura que espera exportData
       const formattedData = {
         columns: {},
         tasks: {},
       };
 
-      // Agregar tasks al objeto
       tasks.forEach((task) => {
         formattedData.tasks[task.id] = {
           content: task.title,
@@ -95,7 +95,6 @@ const SidebarNima = memo(function SidebarNima({
         };
       });
 
-      // Agregar columns con sus taskIds
       columns.forEach((column) => {
         const columnTasks = tasks.filter((t) => t.column_id === column.id);
         formattedData.columns[column.id] = {
@@ -115,7 +114,7 @@ const SidebarNima = memo(function SidebarNima({
     }
   }, [currentBoardId]);
 
-  // 🔹 Cargar boards del usuario - SOLO UNA VEZ
+  // Cargar boards del usuario
   useEffect(() => {
     if (!user?.id) return;
 
@@ -130,7 +129,6 @@ const SidebarNima = memo(function SidebarNima({
 
         setBoards(userBoards);
 
-        // Si no hay board seleccionado, seleccionar el primero
         if (!currentBoardId && userBoards.length > 0) {
           onBoardChange(userBoards[0].id);
         }
@@ -145,13 +143,12 @@ const SidebarNima = memo(function SidebarNima({
 
     loadBoards();
 
-    // Cleanup para evitar actualizaciones en componente desmontado
     return () => {
       isMounted = false;
     };
-  }, [user?.id]); // Solo depende del ID del usuario
+  }, [user?.id]);
 
-  // 🔹 Crear nuevo board
+  // Crear nuevo board
   const handleCreateBoard = useCallback(
     async (title) => {
       if (creatingBoard) return;
@@ -172,71 +169,62 @@ const SidebarNima = memo(function SidebarNima({
     [user?.id, onBoardChange, creatingBoard]
   );
 
-  // 🔹 Iniciar edición de board
-  const handleEditClick = useCallback((e, board) => {
+  // Abrir configuración del board
+  const handleOpenBoardSettings = useCallback((e, board) => {
     e.stopPropagation();
-    setBoardToEdit(board);
-    setShowEditDialog(true);
+    setSelectedBoard(board);
+    setShowBoardSettings(true);
   }, []);
 
-  // 🔹 Confirmar edición
-  const handleConfirmEdit = useCallback(
+  // Renombrar board
+  const handleRenameBoard = useCallback(
     async (newTitle) => {
-      if (!boardToEdit) return;
+      if (!selectedBoard) return;
 
       try {
-        await BoardLogic.renameBoard(boardToEdit.id, user.id, newTitle);
+        await BoardLogic.renameBoard(selectedBoard.id, user.id, newTitle);
 
         setBoards((prev) =>
           prev.map((b) =>
-            b.id === boardToEdit.id ? { ...b, title: newTitle } : b
+            b.id === selectedBoard.id ? { ...b, title: newTitle } : b
           )
         );
 
-        setShowEditDialog(false);
-        setBoardToEdit(null);
+        setShowBoardSettings(false);
+        setSelectedBoard(null);
       } catch (error) {
         console.error("Error renombrando board:", error);
         alert("Error al renombrar el tablero");
       }
     },
-    [boardToEdit, user?.id]
+    [selectedBoard, user?.id]
   );
 
-  // 🔹 Iniciar eliminación de board
-  const handleDeleteClick = useCallback((e, board) => {
-    e.stopPropagation();
-    setBoardToDelete(board);
-    setShowDeleteDialog(true);
-  }, []);
-
-  // 🔹 Confirmar eliminación
-  const handleConfirmDelete = useCallback(async () => {
-    if (!boardToDelete) return;
+  // Eliminar board
+  const handleDeleteBoard = useCallback(async () => {
+    if (!selectedBoard) return;
 
     try {
-      await BoardLogic.deleteBoard(boardToDelete.id, user.id);
+      await BoardLogic.deleteBoard(selectedBoard.id, user.id);
 
-      const updatedBoards = boards.filter((b) => b.id !== boardToDelete.id);
+      const updatedBoards = boards.filter((b) => b.id !== selectedBoard.id);
       setBoards(updatedBoards);
 
-      // Si se eliminó el board activo, cambiar al primero disponible
-      if (currentBoardId === boardToDelete.id && updatedBoards.length > 0) {
+      if (currentBoardId === selectedBoard.id && updatedBoards.length > 0) {
         onBoardChange(updatedBoards[0].id);
       } else if (updatedBoards.length === 0) {
-        // Si no quedan boards, crear uno nuevo automáticamente
         const newBoard = await BoardLogic.createMainBoard(user.id);
         setBoards([newBoard]);
         onBoardChange(newBoard.id);
       }
 
-      setShowDeleteDialog(false);
-      setBoardToDelete(null);
+      setShowBoardSettings(false);
+      setSelectedBoard(null);
     } catch (error) {
       console.error("Error eliminando board:", error);
       alert("Error al eliminar el tablero");
     }
-  }, [boardToDelete, boards, currentBoardId, user?.id, onBoardChange]);
+  }, [selectedBoard, boards, currentBoardId, user?.id, onBoardChange]);
 
   const canCreateMoreBoards = boards.length < 3;
 
@@ -269,17 +257,16 @@ const SidebarNima = memo(function SidebarNima({
         onConfirm={handleCreateBoard}
       />
 
-      <EditBoardDialog
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        onConfirm={handleConfirmEdit}
-        currentName={boardToEdit?.title || ""}
-      />
-
-      <DeleteBoardDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={handleConfirmDelete}
+      <BoardSettingsDialog
+        open={showBoardSettings}
+        onOpenChange={setShowBoardSettings}
+        board={selectedBoard}
+        onRename={handleRenameBoard}
+        onDelete={handleDeleteBoard}
+        onExport={handleExport}
+        onShare={() => {
+          alert("Funcionalidad próximamente");
+        }}
       />
 
       <Sidebar className="fixed top-0 left-0 z-50 h-full w-64 bg-black/40 border-r border-white/10 shadow-2xl text-white">
@@ -398,30 +385,29 @@ const SidebarNima = memo(function SidebarNima({
                   <SidebarMenuItem key={board.id}>
                     <SidebarMenuButton
                       onClick={() => onBoardChange(board.id)}
-                      className={`cursor-pointer group flex items-center justify-between transition-all  ${
+                      className={`cursor-pointer group flex items-center justify-between transition-all ${
                         currentBoardId === board.id
                           ? "border-1 border-white/10 hover:bg-transparent hover:text-white text-white"
                           : "hover:bg-white/10 hover:text-white"
                       }`}
                     >
-                      <div className="flex gap-2 items-center ">
+                      <div className="flex gap-2 items-center">
                         <ClipboardList className="w-4 h-4" />
                         <span>{board.title}</span>
                       </div>
 
-                      <div className="flex gap-2 items-center ">
-                        <Edit2
-                          onClick={(e) => handleEditClick(e, board)}
-                          className="w-3 h-3 text-blue-400 hover:text-blue-300"
-                          title="Editar tablero"
-                        />
-
-                        <Trash2
-                          onClick={(e) => handleDeleteClick(e, board)}
-                          className="w-3 h-3 text-red-400 hover:text-red-300"
-                          title="Eliminar tablero"
-                        />
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Settings
+                            onClick={(e) => handleOpenBoardSettings(e, board)}
+                            className="w-4 h-4 text-gray-400 hover:text-white transition-colors"
+                            title="Configuración del tablero"
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Configurar tablero</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

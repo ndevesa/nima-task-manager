@@ -150,7 +150,7 @@ export default function TaskDialog({
         </DialogHeader>
 
         {/* --- FORM --- */}
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-2xl">
           {/* Título */}
           <Input
             id="title"
@@ -170,7 +170,7 @@ export default function TaskDialog({
               setFormData((prev) => ({ ...prev, description: e.target.value }))
             }
             placeholder="Describe los detalles de la tarea..."
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 min-h-[100px]"
+            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 min-h-[100px] max-h-[200px] max-w-[480px]"
           />
 
           {/* Subtareas */}
