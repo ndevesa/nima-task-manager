@@ -132,7 +132,7 @@ export function BoardSettingsDialog({
                 />
                 {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                 <p className="text-sm text-white/50 mt-2">
-                  Cambiá el nombre de tu tablero para organizarlo mejor.
+                  Podes cambiar el nombre de tu tablero para organizarlo mejor.
                 </p>
               </div>
             </div>

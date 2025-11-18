@@ -101,6 +101,7 @@ export default function App() {
   const formRef = useRef(formData);
   const dataRef = useRef(data);
   const editingTaskIdRef = useRef(editingTaskId);
+  const isLoadingRef = useRef(false);
 
   // ---- EFECTS ----
   useEffect(() => {
@@ -135,27 +136,17 @@ export default function App() {
   useEffect(() => {
     async function ensureUserProfile(userId) {
       try {
-        const { data: existing, error: fetchError } = await supabase
+        const { error } = await supabase
           .from("profiles")
-          .select("id")
-          .eq("id", userId)
-          .maybeSingle();
+          .upsert(
+            { id: userId, background: null },
+            { onConflict: "id", ignoreDuplicates: true }
+          );
 
-        if (fetchError) {
-          console.error("Error verificando perfil:", fetchError);
-          return;
-        }
-
-        if (!existing) {
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert([{ id: userId, background: null }]);
-
-          if (insertError) {
-            console.error("Error creando perfil:", insertError);
-          } else {
-            console.log("✅ Perfil creado correctamente");
-          }
+        if (error) {
+          console.error("Error asegurando perfil:", error);
+        } else {
+          console.log("✅ Perfil listo");
         }
       } catch (err) {
         console.error("Error en ensureUserProfile:", err);
@@ -167,9 +158,14 @@ export default function App() {
         .from("profiles")
         .select("background")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) return console.error(error);
+
+      if (!data) {
+        console.log("No hay background configurado aún");
+        return;
+      }
 
       const bg = data?.background;
       if (!bg) return;
@@ -191,29 +187,26 @@ export default function App() {
       }
     }
 
-    // ✅ Solo ejecutar una vez cuando el usuario carga
-    if (hasLoadedInitialData || !user) {
-      if (!user) setLoadingData(false);
+    // ✅ Guardia mejorada
+    if (hasLoadedInitialData || !user || isLoadingRef.current) {
       return;
     }
 
-    // 🔹 Carga inicial de datos CON BOARDS
     const fetchData = async () => {
+      isLoadingRef.current = true;
       setLoadingData(true);
 
       try {
         await ensureUserProfile(user.id);
+        await applyUserBackground(user.id);
 
-        // 🆕 Cargar boards del usuario
         const userBoards = await BoardLogic.loadUserBoards(user.id);
         setBoards(userBoards);
 
-        // 🆕 Si tiene boards, cargar el primero por defecto
         if (userBoards && userBoards.length > 0) {
           const firstBoard = userBoards[0];
           setCurrentBoardId(firstBoard.id);
 
-          // Cargar datos del primer board
           const boardData = await BoardLogic.loadBoardData(
             user.id,
             firstBoard.id
@@ -221,15 +214,11 @@ export default function App() {
 
           if (boardData && Object.keys(boardData.columns).length > 0) {
             setData(boardData);
-            await applyUserBackground(user.id);
           } else {
-            // Tiene board pero sin datos - estructura correcta
             setData({ columns: {}, tasks: {}, columnOrder: [] });
           }
         } else {
-          // Usuario nuevo sin boards - Modo demo
           setData(initialData);
-          // NO setear isDemoMode aquí para evitar loop
         }
       } catch (err) {
         console.error("Error cargando datos:", err);
@@ -237,11 +226,12 @@ export default function App() {
       } finally {
         setLoadingData(false);
         setHasLoadedInitialData(true);
+        isLoadingRef.current = false;
       }
     };
 
     fetchData();
-  }, [user, hasLoadedInitialData]); // ← QUITAR isDemoMode de las dependencias
+  }, [user, hasLoadedInitialData]);
 
   // ---- FUNCIÓN PARA CAMBIAR DE BOARD ----
   const handleBoardChange = useCallback(

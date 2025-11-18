@@ -21,6 +21,8 @@ import {
   Plus,
   ClipboardList,
   Settings,
+  Handshake,
+  Heart,
 } from "lucide-react";
 import {
   Tooltip,
@@ -31,6 +33,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { ExportConfirmDialog } from "./ExportConfirmDialog";
 import { CreateBoardDialog } from "./CreateBoardDialog";
 import BoardSettingsDialog from "./BoardSettingsDialog";
+import FeedBackDialog from "./FeedBackDialog";
 import * as BoardLogic from "@/lib/BoardLogic";
 import { exportData } from "@/lib/exportData";
 
@@ -50,6 +53,7 @@ const SidebarNima = memo(function SidebarNima({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creatingBoard, setCreatingBoard] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
 
   // Estados para el nuevo BoardSettingsDialog
   const [selectedBoard, setSelectedBoard] = useState(null);
@@ -269,6 +273,11 @@ const SidebarNima = memo(function SidebarNima({
         }}
       />
 
+      <FeedBackDialog
+        open={showFeedbackDialog}
+        onOpenChange={setShowFeedbackDialog}
+      />
+
       <Sidebar className="fixed top-0 left-0 z-50 h-full w-64 bg-black/40 border-r border-white/10 shadow-2xl text-white">
         <SidebarContent className="bg-[#0f0f0f] py-4 px-3">
           <SidebarHeader className="py-0">
@@ -320,54 +329,7 @@ const SidebarNima = memo(function SidebarNima({
                     onClick={() => setIsCalendarOpen(true)}
                   >
                     <CalendarDays className="w-4 h-4" />
-                    Modo calendario
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70">
-              Mis Datos
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => setShowExportDialog(true)}
-                  >
-                    <Download className="w-4 h-4" />
-                    Exportar tablero
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70">
-              Personalizar
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => setIsCustomizeDialogOpen(true)}
-                    className="cursor-pointer"
-                  >
-                    <PencilIcon className="w-4 h-4" />
-                    Personalizar NIMA
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => setIsInfodialogOpen(true)}
-                  >
-                    <CircleQuestionMark className="w-4 h-4" />
-                    Acerca de NIMA
+                    Calendario
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -437,6 +399,84 @@ const SidebarNima = memo(function SidebarNima({
                       : canCreateMoreBoards
                       ? "Crear tablero"
                       : "Límite alcanzado"}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-white/70">
+              Mis Datos
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="cursor-pointer"
+                    onClick={() => setShowExportDialog(true)}
+                  >
+                    <Download className="w-4 h-4" />
+                    Exportar tablero
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-white/70">
+              Personalizar
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => setIsCustomizeDialogOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                    Editar dashboard
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-white/70">
+              Sobre NIMA
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="cursor-pointer"
+                    onClick={() => setIsInfodialogOpen(true)}
+                  >
+                    <CircleQuestionMark className="w-4 h-4" />
+                    ¿Qué es?
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild className="cursor-pointer">
+                    <a
+                      href="https://cafecito.app/nima-app"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Heart className="w-4 h-4" />
+                      Colaborar
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="cursor-pointer"
+                    onClick={() => setShowFeedbackDialog(true)}
+                  >
+                    <Handshake className="w-4 h-4" />
+                    Dejar comentarios
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
