@@ -23,7 +23,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 function PriorityIcon({ priority }) {
-  // Usar title en vez de Tooltips pesados; componente memoizado al final por React.memo
   if (priority === "Alta")
     return (
       <Tooltip>

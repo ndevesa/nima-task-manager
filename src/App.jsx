@@ -18,46 +18,23 @@ import {
   SortableContext,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabaseClient";
-
 import { bgImages } from "./constants/backgrounds";
 import initialData from "./data/initialData";
 import * as BoardLogic from "./lib/BoardLogic";
 import Header from "./components/Header";
-import DraggableColumn from "./components/DraggableColumn";
 import Login from "@/components/Login";
-import CalendarView from "@/components/CalendarView";
-import CustomizeDialog from "@/components/CustomizeDialog";
-import TaskDialog from "@/components/TaskDialog";
-import InfoDialog from "@/components/InfoDialog";
-
 import LoadingScreen from "./components/LoadingScreen";
 import SidebarNima from "@/components/SidebarNima";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import BoardView from "./views/BoardView";
+import ListView from "./views/ListView";
 
 export default function App() {
   // ---- AUTENTICACIÓN ----
   const { user, loading } = useAuth();
   const userName = user?.user_metadata?.fullname || user?.email?.split("@")[0];
-
-  /* Actualizar <title> con username */
-  useEffect(() => {
-    if (user?.user_metadata?.fullname) {
-      document.title = `NIMA Tasks - ${user.user_metadata.fullname}`;
-    } else if (user?.email) {
-      document.title = `NIMA Tasks - ${user.email}`;
-    } else {
-      document.title = "NIMA Tasks";
-    }
-  }, [user]);
 
   // ---- ESTADOS PRINCIPALES ----
   const [data, setData] = useState({
@@ -95,6 +72,7 @@ export default function App() {
     attachment_url: null,
     attachment_type: null,
   });
+  const [viewMode, setViewMode] = useState(null);
   const priorities = ["Alta", "Media", "Baja"];
 
   // ---- REFS ----
@@ -548,7 +526,7 @@ export default function App() {
       <div className="flex-1 overflow-hidden relative z-10">
         <SidebarTrigger
           color="#fff"
-          className="fixed h-10 w-10 text-white bg-[#0f0f0f]  mt-5 ml-5 z-50  cursor-pointer"
+          className="fixed h-10 w-10 text-white mt-5 ml-5 z-50 cursor-pointer hover:bg-white hover:text-[#0f0f0f] transition-colors"
         />
 
         {/* HEADER */}
@@ -562,148 +540,78 @@ export default function App() {
           handleLoadRealData={handleLoadRealData}
           handleLoadDemo={handleLoadDemo}
           setFilters={setFilters}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          setIsInfodialogOpen={setIsInfodialogOpen}
         />
 
-        {/* === DND CONTEXT === */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <div
-            id="Main"
-            className={`flex-1 flex flex-col text-white  transition-all duration-300 ${
-              isDragging ? "is-dragging" : ""
-            }`}
-          >
-            {/* TABLERO PRINCIPAL */}
-            <div className="flex-1 w-full p-3 flex gap-4 overflow-x-auto bg-white/5 rounded-2xl border border-white/10 shadow-xl">
-              <SortableContext
-                items={data.columnOrder}
-                strategy={horizontalListSortingStrategy}
-              >
-                {columnsToRender
-                  .filter(
-                    ({ column }) =>
-                      filters.column === "Todas" || column.id === filters.column
-                  )
-                  .map(({ column, tasks }) => {
-                    const filteredTasks = tasks.map((task) => {
-                      const matchQuery =
-                        filters.query === "" ||
-                        task.content
-                          .toLowerCase()
-                          .includes(filters.query.toLowerCase()) ||
-                        task.description
-                          ?.toLowerCase()
-                          .includes(filters.query.toLowerCase());
-
-                      const matchPriority =
-                        !filters.priority ||
-                        filters.priority === "Todas" ||
-                        task.taskPriority === filters.priority;
-
-                      return {
-                        ...task,
-                        visible: matchQuery && matchPriority,
-                      };
-                    });
-
-                    return (
-                      <DraggableColumn
-                        key={column.id}
-                        column={column}
-                        tasks={filteredTasks}
-                        onDeleteTask={handleDeleteTask}
-                        onEditTask={handleEditTask}
-                        onDeleteColumn={handleDeleteColumn}
-                        onUpdateTitle={handleUpdateColumnTitle}
-                        setFormData={setFormData}
-                        setEditingTaskId={setEditingTaskId}
-                        setIsDialogOpen={setIsDialogOpen}
-                      />
-                    );
-                  })}
-              </SortableContext>
-            </div>
-
-            {/* DIALOGS */}
-            <CustomizeDialog
-              open={isCustomizeDialogOpen}
-              setOpen={setIsCustomizeDialogOpen}
-            />
-            <InfoDialog
-              isOpen={isInfodialogOpen}
-              onClose={() => setIsInfodialogOpen(false)}
-            />
-            <TaskDialog
-              isOpen={isDialogOpen}
-              setIsOpen={(open) => {
-                setIsDialogOpen(open);
-                if (!open) {
-                  setTimeout(() => {
-                    setEditingTaskId(null);
-                    setFormData({
-                      title: "",
-                      description: "",
-                      category: undefined,
-                      dueDate: null,
-                      taskPriority: "",
-                      subtasks: [],
-                      tag: "",
-                      attachment_url: null,
-                      attachment_name: null,
-                      attachment_type: null,
-                    });
-                  }, 200);
-                }
-              }}
-              editingTaskId={editingTaskId}
-              formData={formData}
-              setFormData={setFormData}
-              onSaveTask={onSaveTask}
-              handleDeleteTask={handleDeleteTask}
-              data={data}
-              priorities={priorities}
-            />
-
-            {/* CALENDAR */}
-            <Dialog open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <DialogContent className="dialog-wide bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-2xl h-[90vh] overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle>Modo Calendario</DialogTitle>
-                  <DialogDescription className="text-white/70">
-                    Visualizá tus tareas según la fecha de vencimiento.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="mt-4 h-full overflow-y-auto overflow-x-hidden">
-                  <CalendarView
-                    tasks={Object.values(data.tasks)}
-                    onTaskClick={(taskId) => handleEditTask(taskId)}
-                    onCreateTask={handleOpenNewTaskWithDate}
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* DRAG OVERLAY */}
-            <DragOverlay dropAnimation={null}>
-              {activeId && activeType === "card" && activeTask ? (
-                <div className="bg-white/10 p-2 rounded-md border border-white/10 text-black w-60">
-                  <h3 className="block font-semibold truncate">
-                    {activeTask.content}
-                  </h3>
-                  {activeTask.description && (
-                    <p className="text-sm truncate">{activeTask.description}</p>
-                  )}
-                </div>
-              ) : null}
-            </DragOverlay>
-          </div>
-        </DndContext>
+        {viewMode === "boardview" ? (
+          <BoardView
+            sensors={sensors}
+            isDragging={isDragging}
+            columnsToRender={columnsToRender}
+            filters={filters}
+            handleDragStart={handleDragStart}
+            handleDragEnd={handleDragEnd}
+            handleDragCancel={handleDragCancel}
+            handleDeleteTask={handleDeleteTask}
+            handleEditTask={handleEditTask}
+            handleDeleteColumn={handleDeleteColumn}
+            handleUpdateColumnTitle={handleUpdateColumnTitle}
+            setFormData={setFormData}
+            setEditingTaskId={setEditingTaskId}
+            setIsDialogOpen={setIsDialogOpen}
+            data={data}
+            priorities={priorities}
+            isCustomizeDialogOpen={isCustomizeDialogOpen}
+            setIsCustomizeDialogOpen={setIsCustomizeDialogOpen}
+            isInfodialogOpen={isInfodialogOpen}
+            setIsInfodialogOpen={setIsInfodialogOpen}
+            isDialogOpen={isDialogOpen}
+            formData={formData}
+            editingTaskId={editingTaskId}
+            onSaveTask={onSaveTask}
+            isCalendarOpen={isCalendarOpen}
+            setIsCalendarOpen={setIsCalendarOpen}
+            handleOpenNewTaskWithDate={handleOpenNewTaskWithDate}
+            activeId={activeId}
+            activeType={activeType}
+            activeTask={activeTask}
+          />
+        ) : (
+          <ListView
+            sensors={sensors}
+            isDragging={isDragging}
+            columnsToRender={columnsToRender}
+            filters={filters}
+            handleDragStart={handleDragStart}
+            handleDragEnd={handleDragEnd}
+            handleDragCancel={handleDragCancel}
+            handleDeleteTask={handleDeleteTask}
+            handleEditTask={handleEditTask}
+            handleDeleteColumn={handleDeleteColumn}
+            handleUpdateColumnTitle={handleUpdateColumnTitle}
+            setFormData={setFormData}
+            setEditingTaskId={setEditingTaskId}
+            setIsDialogOpen={setIsDialogOpen}
+            data={data}
+            priorities={priorities}
+            isCustomizeDialogOpen={isCustomizeDialogOpen}
+            setIsCustomizeDialogOpen={setIsCustomizeDialogOpen}
+            isInfodialogOpen={isInfodialogOpen}
+            setIsInfodialogOpen={setIsInfodialogOpen}
+            isDialogOpen={isDialogOpen}
+            formData={formData}
+            editingTaskId={editingTaskId}
+            onSaveTask={onSaveTask}
+            isCalendarOpen={isCalendarOpen}
+            setIsCalendarOpen={setIsCalendarOpen}
+            handleOpenNewTaskWithDate={handleOpenNewTaskWithDate}
+            activeId={activeId}
+            activeType={activeType}
+            activeTask={activeTask}
+          />
+        )}
       </div>
     </SidebarProvider>
   );

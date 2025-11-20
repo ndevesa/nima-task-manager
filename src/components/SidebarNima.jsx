@@ -33,9 +33,10 @@ import { supabase } from "@/lib/supabaseClient";
 import { ExportConfirmDialog } from "./ExportConfirmDialog";
 import { CreateBoardDialog } from "./CreateBoardDialog";
 import BoardSettingsDialog from "./BoardSettingsDialog";
-import FeedBackDialog from "./FeedBackDialog";
 import * as BoardLogic from "@/lib/BoardLogic";
 import { exportData } from "@/lib/exportData";
+import { Separator } from "@radix-ui/react-dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const SidebarNima = memo(function SidebarNima({
   user,
@@ -53,7 +54,6 @@ const SidebarNima = memo(function SidebarNima({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creatingBoard, setCreatingBoard] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
-  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
 
   // Estados para el nuevo BoardSettingsDialog
   const [selectedBoard, setSelectedBoard] = useState(null);
@@ -273,11 +273,6 @@ const SidebarNima = memo(function SidebarNima({
         }}
       />
 
-      <FeedBackDialog
-        open={showFeedbackDialog}
-        onOpenChange={setShowFeedbackDialog}
-      />
-
       <Sidebar className="fixed top-0 left-0 z-50 h-full w-64 bg-black/40 border-r border-white/10 shadow-2xl text-white">
         <SidebarContent className="bg-[#0f0f0f] py-4 px-3">
           <SidebarHeader className="py-0">
@@ -298,6 +293,75 @@ const SidebarNima = memo(function SidebarNima({
               </a>
             </SidebarGroup>
           </SidebarHeader>
+
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-white/70 flex items-center gap-2">
+              Mis Tableros ({boards.length} de 3)
+            </SidebarGroupLabel>
+            <div className="text-sm text-gray-500 ml-2 mb-2"></div>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {boards.map((board) => (
+                  <SidebarMenuItem key={board.id}>
+                    <SidebarMenuButton
+                      onClick={() => onBoardChange(board.id)}
+                      className={`cursor-pointer group flex items-center justify-between transition-all ${
+                        currentBoardId === board.id
+                          ? "border-1 border-white/10 hover:bg-white/40 hover:text-white bg-white/40 text-white"
+                          : "hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex gap-2 items-center">
+                        <ClipboardList className="w-4 h-4" />
+                        <span>{board.title}</span>
+                      </div>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Settings
+                            onClick={(e) => handleOpenBoardSettings(e, board)}
+                            className="w-4 h-4 text-gray-400 hover:text-white transition-colors"
+                            title="Configuración del tablero"
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Configurar tablero</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+
+                {boards.length === 0 && (
+                  <div className="text-center text-gray-500 py-8 px-2">
+                    <p className="text-sm">No tenés tableros todavía</p>
+                    <p className="text-xs mt-1 opacity-70">
+                      Creá tu primer tablero
+                    </p>
+                  </div>
+                )}
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => setShowCreateDialog(true)}
+                    disabled={!canCreateMoreBoards || creatingBoard}
+                    className={`cursor-pointer mt-2 text-center text-[11px] transition-all ${
+                      canCreateMoreBoards && !creatingBoard
+                        ? "hover:bg-white"
+                        : "bg-gray-700 text-white/70 cursor-not-allowed"
+                    }`}
+                  >
+                    <Plus className="w-4 h-4" />
+                    {creatingBoard
+                      ? "Creando..."
+                      : canCreateMoreBoards
+                      ? "Crear tablero"
+                      : "Límite alcanzado"}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
           <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
@@ -337,73 +401,53 @@ const SidebarNima = memo(function SidebarNima({
           </SidebarGroup>
 
           <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70 flex items-center gap-2">
-              Mis Tableros ({boards.length} de 3)
+            <SidebarGroupLabel className="text-white/70">
+              Mis Datos
             </SidebarGroupLabel>
-            <div className="text-sm text-gray-500 ml-2 mb-2"></div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {boards.map((board) => (
-                  <SidebarMenuItem key={board.id}>
-                    <SidebarMenuButton
-                      onClick={() => onBoardChange(board.id)}
-                      className={`cursor-pointer group flex items-center justify-between transition-all ${
-                        currentBoardId === board.id
-                          ? "border-1 border-white/10 hover:bg-transparent hover:text-white text-white"
-                          : "hover:bg-white/10 hover:text-white"
-                      }`}
-                    >
-                      <div className="flex gap-2 items-center">
-                        <ClipboardList className="w-4 h-4" />
-                        <span>{board.title}</span>
-                      </div>
-
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Settings
-                            onClick={(e) => handleOpenBoardSettings(e, board)}
-                            className="w-4 h-4 text-gray-400 hover:text-white transition-colors"
-                            title="Configuración del tablero"
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Configurar tablero</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-
-                {boards.length === 0 && (
-                  <div className="text-center text-gray-500 py-8 px-2">
-                    <p className="text-sm">No tenés tableros todavía</p>
-                    <p className="text-xs mt-1 opacity-70">
-                      Creá tu primer tablero
-                    </p>
-                  </div>
-                )}
-
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => setShowCreateDialog(true)}
-                    disabled={!canCreateMoreBoards || creatingBoard}
-                    className={`cursor-pointer mt-2 text-center transition-all ${
-                      canCreateMoreBoards && !creatingBoard
-                        ? "hover:bg-white/70"
-                        : "bg-gray-700 text-white/70 cursor-not-allowed opacity-50"
-                    }`}
+                    className="cursor-pointer"
+                    onClick={() => setShowExportDialog(true)}
                   >
-                    <Plus className="w-4 h-4" />
-                    {creatingBoard
-                      ? "Creando..."
-                      : canCreateMoreBoards
-                      ? "Crear tablero"
-                      : "Límite alcanzado"}
+                    <Download className="w-4 h-4" />
+                    Exportar tablero
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-white/70">
+              Personalizar
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => setIsCustomizeDialogOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                    Personalizar NIMA
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="cursor-pointer"
+                    onClick={() => setIsInfodialogOpen(true)}
+                  >
+                    <CircleQuestionMark className="w-4 h-4" />
+                    Acerca de NIMA
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <Separator className="border-t-1 border-white/10" />
 
           <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
@@ -443,7 +487,7 @@ const SidebarNima = memo(function SidebarNima({
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarGroup>
+          {/* <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
               Sobre NIMA
             </SidebarGroupLabel>
@@ -481,7 +525,7 @@ const SidebarNima = memo(function SidebarNima({
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
-          </SidebarGroup>
+          </SidebarGroup> */}
 
           <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
