@@ -15,14 +15,12 @@ import {
   Columns2,
   CalendarDays,
   PencilIcon,
-  CircleQuestionMark,
   LogOut,
   Download,
   Plus,
   ClipboardList,
   Settings,
-  Handshake,
-  Heart,
+  User,
 } from "lucide-react";
 import {
   Tooltip,
@@ -36,7 +34,7 @@ import BoardSettingsDialog from "./BoardSettingsDialog";
 import * as BoardLogic from "@/lib/BoardLogic";
 import { exportData } from "@/lib/exportData";
 import { Separator } from "@radix-ui/react-dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const SidebarNima = memo(function SidebarNima({
   user,
@@ -363,6 +361,8 @@ const SidebarNima = memo(function SidebarNima({
             </SidebarGroupContent>
           </SidebarGroup>
 
+          <Separator className="border border-white/10" />
+
           <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
               Acciones
@@ -400,6 +400,8 @@ const SidebarNima = memo(function SidebarNima({
             </SidebarGroupContent>
           </SidebarGroup>
 
+          <Separator className="border border-white/10" />
+
           <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
               Mis Datos
@@ -418,6 +420,8 @@ const SidebarNima = memo(function SidebarNima({
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          <Separator className="border border-white/10" />
 
           <SidebarGroup>
             <SidebarGroupLabel className="text-white/70">
@@ -434,117 +438,44 @@ const SidebarNima = memo(function SidebarNima({
                     Personalizar NIMA
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => setIsInfodialogOpen(true)}
-                  >
-                    <CircleQuestionMark className="w-4 h-4" />
-                    Acerca de NIMA
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <Separator className="border-t-1 border-white/10" />
-
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70">
-              Mis Datos
-            </SidebarGroupLabel>
+          <SidebarGroup className="mt-auto">
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => setShowExportDialog(true)}
-                  >
-                    <Download className="w-4 h-4" />
-                    Exportar tablero
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-[#464646]/20">
+                    <div className="flex items-center justify-between">
+                      <Avatar>
+                        <AvatarImage />
+                        <AvatarFallback>
+                          <User className="w-5 h-5 text-muted-foreground" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="text-white/50 ml-2 text-sm">{userName}</p>
+                    </div>
 
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70">
-              Personalizar
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => setIsCustomizeDialogOpen(true)}
-                    className="cursor-pointer"
-                  >
-                    <PencilIcon className="w-4 h-4" />
-                    Editar dashboard
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          {/* <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70">
-              Sobre NIMA
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => setIsInfodialogOpen(true)}
-                  >
-                    <CircleQuestionMark className="w-4 h-4" />
-                    ¿Qué es?
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild className="cursor-pointer">
-                    <a
-                      href="https://cafecito.app/nima-app"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Heart className="w-4 h-4" />
-                      Colaborar
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="cursor-pointer"
-                    onClick={() => setShowFeedbackDialog(true)}
-                  >
-                    <Handshake className="w-4 h-4" />
-                    Dejar comentarios
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup> */}
-
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70">
-              Cuenta
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <p className="text-white/50 ml-2 text-sm">
-                    Sesión de {userName}
-                  </p>
-                  <SidebarMenuButton
-                    onClick={() => supabase.auth.signOut()}
-                    className="cursor-pointer mt-2"
-                    id="button-logout"
-                  >
-                    <LogOut className="w-5 h-5" title="Logout" alt="Logout" />
-                    Cerrar sesión
-                  </SidebarMenuButton>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => supabase.auth.signOut()}
+                          className="cursor-pointer"
+                          id="button-logout"
+                        >
+                          <LogOut
+                            className="w-5 h-5"
+                            title="Logout"
+                            alt="Logout"
+                          />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Cerrar sesión</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>

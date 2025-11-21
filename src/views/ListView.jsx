@@ -48,7 +48,7 @@ export default function ListView({
       id="Main"
       className="flex-1 flex flex-col text-white transition-all duration-300"
     >
-      <div className="flex-1 w-full flex flex-col gap-6 overflow-y-auto shadow-xl">
+      <div className="w-full flex flex-col gap-6 overflow-y-auto shadow-xl mb-5">
         {columnsToRender
           .filter(
             ({ column }) =>
@@ -91,7 +91,7 @@ export default function ListView({
                 key={column.id}
                 className="bg-white/5 rounded-2xl border border-white/10 p-3"
               >
-                <div className="flex justify-between gap-5 items-center mb-3">
+                <div className="flex justify-between gap-5 items-center mb-2">
                   <h2 className="text-xl font-semibold text-white/90">
                     {column.title}
                   </h2>

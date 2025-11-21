@@ -78,7 +78,7 @@ export default function InfoDialog({ isOpen, onClose }) {
               Nicolás Devesa
             </a>
           </p>
-          <p>¡Gracias por usarlo!</p>
+          <p>¡Gracias por usar NIMA!</p>
         </footer>
       </DialogContent>
     </Dialog>

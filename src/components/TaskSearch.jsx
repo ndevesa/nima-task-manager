@@ -11,7 +11,7 @@ import * as BoardLogic from "../lib/BoardLogic";
 
 export default function TaskSearch({ columns, onSearchChange }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState(undefined); // ← undefined para placeholder
+  const [selectedPriority, setSelectedPriority] = useState(undefined);
   const [selectedColumn, setSelectedColumn] = useState("Todas");
 
   const data = BoardLogic.loadFromLocalStorage();
@@ -19,7 +19,6 @@ export default function TaskSearch({ columns, onSearchChange }) {
   const totalTasks = useMemo(() => BoardLogic.calculateTasks(data), [data]);
   const searchPlaceholder = `Buscar tareas (${totalTasks})`;
 
-  // Notificar cambios al componente padre (App)
   const handleChange = (newValues) => {
     onSearchChange({
       query: newValues.query ?? searchQuery,
@@ -29,7 +28,7 @@ export default function TaskSearch({ columns, onSearchChange }) {
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center gap-3 bg-white/10 border border-white/20 p-2 rounded-xl backdrop-blur-md">
+    <div className="flex flex-col md:flex-row items-center gap-2">
       <Input
         type="text"
         placeholder={searchPlaceholder}
@@ -41,7 +40,6 @@ export default function TaskSearch({ columns, onSearchChange }) {
         className="flex-1 bg-white/10 border-white/20 text-white/80 placeholder:text-white/70"
       />
 
-      {/* PRIORIDAD con placeholder */}
       <Select
         value={selectedPriority || undefined}
         onValueChange={(value) => {
@@ -49,7 +47,7 @@ export default function TaskSearch({ columns, onSearchChange }) {
           handleChange({ priority: value });
         }}
       >
-        <SelectTrigger className="bg-white/10 border-white/20 text-white/80 hover:text-white w-[140px] [&>span]:text-white/80 [&>svg]:text-white/80 hover:[&>svg]:text-white">
+        <SelectTrigger className="bg-white/10 border-white/20 text-white/80 w-[140px]">
           <SelectValue placeholder="Prioridad" />
         </SelectTrigger>
         <SelectContent className="bg-gray backdrop-blur-lg border-white/20 text-white">
@@ -60,7 +58,6 @@ export default function TaskSearch({ columns, onSearchChange }) {
         </SelectContent>
       </Select>
 
-      {/* COLUMNA con "Todas" seleccionado pero mostrando placeholder visual */}
       <Select
         value={selectedColumn}
         onValueChange={(value) => {
@@ -68,7 +65,7 @@ export default function TaskSearch({ columns, onSearchChange }) {
           handleChange({ column: value });
         }}
       >
-        <SelectTrigger className="bg-white/10 border-white/20 text-white/80 hover:text-white w-[140px] [&>span]:text-white/80 [&>svg]:text-white/80 hover:[&>svg]:text-white">
+        <SelectTrigger className="bg-white/10 border-white/20 text-white/80 w-[140px]">
           <SelectValue>
             {selectedColumn === "Todas" ? (
               <span className="text-white/70">Categoría</span>
@@ -77,8 +74,10 @@ export default function TaskSearch({ columns, onSearchChange }) {
             )}
           </SelectValue>
         </SelectTrigger>
+
         <SelectContent className="bg-gray backdrop-blur-lg border-white/20 text-white">
           <SelectItem value="Todas">Todas</SelectItem>
+
           {Object.values(columns).map((col) => (
             <SelectItem key={col.id} value={col.id}>
               {col.title}

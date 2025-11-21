@@ -68,7 +68,7 @@ export default function BoardView({
     >
       <div
         id="Main"
-        className={`flex-1 flex flex-col text-white  transition-all duration-300 ${
+        className={`flex-1 flex flex-col text-white transition-all duration-300 ${
           isDragging ? "is-dragging" : ""
         }`}
       >
