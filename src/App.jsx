@@ -526,7 +526,7 @@ export default function App() {
       <div className="flex-1 overflow-hidden relative z-10">
         <SidebarTrigger
           color="#fff"
-          className="fixed h-10 w-10 text-white mt-5 ml-5 z-50 cursor-pointer hover:bg-white hover:text-[#0f0f0f] transition-colors"
+          className="fixed h-10 w-10 text-white mt-6 ml-6 z-50 cursor-pointer hover:bg-white hover:text-[#0f0f0f] transition-colors"
         />
 
         {/* HEADER */}

@@ -145,7 +145,7 @@ export default function ListView({
                             colSpan={7}
                             className="text-center py-6 text-white/40"
                           >
-                            No hay tareas en esta columna.
+                            No hay tareas en esta categoría.
                           </TableCell>
                         </TableRow>
                       )}
